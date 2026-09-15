@@ -52,18 +52,18 @@ Coordenação do curso -> Encaminhamento ao NAE -> Triagem (Psicopedagoga)
 
 ## Milestones (ordem do roadmap — seguir esta sequência)
 
-| ID | Milestone |
-|---|---|
-| M1 | Core + ACL (autenticação, usuários, perfis, permissões) |
-| M2 | UI/UX + Identidade Visual (Design System antes dos módulos de negócio) |
-| M3 | Estudantes (cadastro) |
-| M4 | Triagem + Atendimentos (agendamento e registro) |
-| M5 | Acompanhamento + Histórico |
-| M6 | Encaminhamentos (internos/externos) |
-| M7 | Agenda |
-| M8 | Relatórios + Indicadores |
-| M9 | Segurança + Auditoria + LGPD |
-| M10 | Validação + Usabilidade (SUS) |
+| ID  | Milestone                                                              |
+| --- | ---------------------------------------------------------------------- |
+| M1  | Core + ACL (autenticação, usuários, perfis, permissões)                |
+| M2  | UI/UX + Identidade Visual (Design System antes dos módulos de negócio) |
+| M3  | Estudantes (cadastro)                                                  |
+| M4  | Triagem + Atendimentos (agendamento e registro)                        |
+| M5  | Acompanhamento + Histórico                                             |
+| M6  | Encaminhamentos (internos/externos)                                    |
+| M7  | Agenda                                                                 |
+| M8  | Relatórios + Indicadores                                               |
+| M9  | Segurança + Auditoria + LGPD                                           |
+| M10 | Validação + Usabilidade (SUS)                                          |
 
 **Segurança é transversal a todos os milestones** — não implementar apenas
 no M9. Autorização sempre no backend (`Gate`/`permission` middleware); as
