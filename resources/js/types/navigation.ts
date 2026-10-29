@@ -15,4 +15,6 @@ export type NavItem = {
     href: NonNullable<LinkComponentBaseProps['href']>;
     icon?: NavIcon;
     isActive?: boolean;
+    /** Permissão exigida para exibir o item (apenas UI). */
+    permission?: string;
 };
