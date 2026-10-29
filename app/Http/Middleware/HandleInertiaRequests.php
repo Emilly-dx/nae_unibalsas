@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => fn () => $request->user()?->permissionSlugs() ?? [],
                 'roles' => fn () => $request->user()?->roles->pluck('slug') ?? [],
             ],
+            'demoScreens' => (bool) config('nae.demo_screens'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

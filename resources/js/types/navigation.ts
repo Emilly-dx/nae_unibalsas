@@ -17,4 +17,8 @@ export type NavItem = {
     isActive?: boolean;
     /** Permissão exigida para exibir o item (apenas UI). */
     permission?: string;
+    /** Marco do roadmap exibido ao lado do item (ex.: M3). */
+    badge?: string;
+    /** Item de tela de demonstração (some quando NAE_DEMO_SCREENS=false). */
+    demo?: boolean;
 };

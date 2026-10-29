@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '@inertiajs/svelte';
+    import Contrast from '@lucide/svelte/icons/contrast';
     import Breadcrumbs from '@/components/Breadcrumbs.svelte';
     import {
         Avatar,
@@ -15,6 +16,7 @@
     import { SidebarTrigger } from '@/components/ui/sidebar';
     import UserMenuContent from '@/components/UserMenuContent.svelte';
     import { getInitials } from '@/lib/initials';
+    import { themeState } from '@/lib/theme.svelte';
     import type { BreadcrumbItem } from '@/types';
 
     let {
@@ -24,6 +26,12 @@
     } = $props();
 
     const auth = $derived(page.props.auth);
+    const theme = themeState();
+    const isDark = $derived(theme.resolvedAppearance() === 'dark');
+
+    function toggleTheme(): void {
+        theme.updateAppearance(isDark ? 'light' : 'dark');
+    }
 </script>
 
 <header
@@ -38,6 +46,11 @@
         {/if}
     </div>
 
+    <div class="flex items-center gap-2">
+    <Button variant="outline" size="sm" class="h-9" onclick={toggleTheme}>
+        <Contrast class="size-4" />
+        <span class="hidden sm:inline">{isDark ? 'Tema claro' : 'Tema escuro'}</span>
+    </Button>
     {#if auth.user}
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -71,6 +84,7 @@
             </DropdownMenuContent>
         </DropdownMenu>
     {/if}
+    </div>
 </header>
 
 {#if breadcrumbs && breadcrumbs.length > 0}

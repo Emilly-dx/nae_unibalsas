@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Students;
 
+use App\Actions\Students\AttachStudentDocument;
+use App\Enums\AccessibilityResource;
 use App\Enums\Sex;
+use App\Enums\Shift;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Students\StoreStudentRequest;
 use App\Http\Requests\Students\UpdateStudentRequest;
@@ -12,6 +15,7 @@ use App\Models\StudentDocument;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,9 +45,16 @@ class StudentController extends Controller
             ->through(fn (Student $student): array => [
                 'id' => $student->id,
                 'name' => $student->name,
+                'social_name' => $student->social_name,
                 'registration' => $student->registration,
                 'course' => $student->course,
                 'period' => $student->period,
+                'shift_label' => $student->shift?->label(),
+                'modality_label' => $student->modality->label(),
+                'email' => $student->email,
+                'phone' => $student->phone,
+                'needs_accessibility' => $student->needs_accessibility,
+                'accessibility_resources' => $student->accessibilityResourceLabels(),
                 'active' => $student->deleted_at === null,
             ]);
 
@@ -58,17 +69,32 @@ class StudentController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        /** @var User $user */
+        $user = $request->user();
+
         return Inertia::render('students/Create', [
-            'sexOptions' => Sex::options(),
-            'courses' => Student::withTrashed()->distinct()->orderBy('course')->pluck('course'),
+            ...$this->formOptions(),
+            'canAttachDocument' => $user->can('students.sensitive'),
         ]);
     }
 
-    public function store(StoreStudentRequest $request): RedirectResponse
+    public function store(StoreStudentRequest $request, AttachStudentDocument $attach): RedirectResponse
     {
-        $student = Student::query()->create($request->validated());
+        /** @var User $user */
+        $user = $request->user();
+
+        $student = Student::query()->create([
+            ...$request->studentData(),
+            'consent_at' => now(),
+        ]);
+
+        $document = $request->file('document');
+
+        if ($document instanceof UploadedFile) {
+            $attach->handle($student, $user, $document, $request->validated('document_title') ?: 'Laudo ou documento de apoio');
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Estudante cadastrado com sucesso.']);
 
@@ -112,14 +138,19 @@ class StudentController extends Controller
     {
         return Inertia::render('students/Edit', [
             'student' => $this->present($student),
-            'sexOptions' => Sex::options(),
-            'courses' => Student::withTrashed()->distinct()->orderBy('course')->pluck('course'),
+            ...$this->formOptions(),
         ]);
     }
 
     public function update(UpdateStudentRequest $request, Student $student): RedirectResponse
     {
-        $student->update($request->validated());
+        $student->fill($request->studentData());
+
+        if ($request->boolean('consent') && $student->consent_at === null) {
+            $student->consent_at = now();
+        }
+
+        $student->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Dados do estudante atualizados.']);
 
@@ -150,14 +181,37 @@ class StudentController extends Controller
     /**
      * @return array<string, mixed>
      */
+    private function formOptions(): array
+    {
+        return [
+            'sexOptions' => Sex::options(),
+            'shiftOptions' => Shift::options(),
+            'accessibilityOptions' => AccessibilityResource::options(),
+            'courses' => Student::withTrashed()->distinct()->orderBy('course')->pluck('course'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function present(Student $student): array
     {
         return [
             'id' => $student->id,
             'name' => $student->name,
+            'social_name' => $student->social_name,
             'registration' => $student->registration,
             'course' => $student->course,
             'period' => $student->period,
+            'shift' => $student->shift?->value,
+            'shift_label' => $student->shift?->label(),
+            'modality' => $student->modality->value,
+            'modality_label' => $student->modality->label(),
+            'needs_accessibility' => $student->needs_accessibility,
+            'accessibility_resources' => $student->accessibility_resources ?? [],
+            'accessibility_resource_labels' => $student->accessibilityResourceLabels(),
+            'has_external_follow_up' => $student->has_external_follow_up,
+            'consent_at' => $student->consent_at?->toIso8601String(),
             'email' => $student->email,
             'phone' => $student->phone,
             'birth_date' => $student->birth_date?->toDateString(),

@@ -6,15 +6,26 @@ export type SexOption = {
 export type StudentListItem = {
     id: number;
     name: string;
+    social_name: string | null;
     registration: string;
     course: string;
     period: number;
+    shift_label: string | null;
+    modality_label: string;
+    email: string | null;
+    phone: string | null;
+    needs_accessibility: boolean;
+    accessibility_resources: string[];
     active: boolean;
 };
 
-export type Student = StudentListItem & {
-    email: string | null;
-    phone: string | null;
+export type Student = Omit<StudentListItem, 'accessibility_resources'> & {
+    shift: string | null;
+    modality: string;
+    accessibility_resources: string[];
+    accessibility_resource_labels: string[];
+    has_external_follow_up: boolean;
+    consent_at: string | null;
     birth_date: string | null;
     sex: string | null;
     sex_label: string | null;
