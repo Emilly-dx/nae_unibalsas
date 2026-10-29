@@ -19,7 +19,7 @@ test('the initial permissions from the SRS are seeded under their module', funct
     (new ModuleSeeder)->run();
     (new PermissionSeeder)->run();
 
-    expect(Permission::query()->count())->toBe(27);
+    expect(Permission::query()->count())->toBe(28);
     expect(Permission::query()->where('slug', 'acl.assign_roles')->first()->module->slug)->toBe('acl');
     expect(Permission::query()->where('slug', 'attendances.finish')->exists())->toBeTrue();
 });

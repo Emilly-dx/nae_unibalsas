@@ -36,7 +36,8 @@ class PermissionSeeder extends Seeder
                 'students.view' => 'Visualizar estudantes',
                 'students.create' => 'Cadastrar estudantes',
                 'students.edit' => 'Editar estudantes',
-                'students.delete' => 'Excluir estudantes',
+                'students.delete' => 'Inativar/reativar estudantes',
+                'students.sensitive' => 'Registrar e consultar dados sensíveis de estudantes (CID e documentos)',
             ],
             'attendances' => [
                 'attendances.view' => 'Visualizar atendimentos',

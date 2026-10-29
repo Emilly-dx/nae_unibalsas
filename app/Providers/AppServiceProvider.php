@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Contracts\SensitiveRecord;
+use App\Models\StudentDisability;
+use App\Models\StudentDocument;
 use App\Models\User;
+use App\Policies\SensitiveRecordPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -54,10 +58,22 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Configure the application's ACL: administrators bypass every check,
      * everyone else is resolved against their permission slugs.
+     *
+     * Exceção: registros sensíveis (RN-012) são sempre decididos pela
+     * policy, sem bypass do administrador (SRS §28.13, pendente com o NAE).
      */
     protected function configureAuthorization(): void
     {
-        Gate::before(function (User $user) {
+        Gate::policy(StudentDisability::class, SensitiveRecordPolicy::class);
+        Gate::policy(StudentDocument::class, SensitiveRecordPolicy::class);
+
+        Gate::before(function (User $user, string $ability, array $arguments) {
+            foreach ($arguments as $argument) {
+                if ($argument instanceof SensitiveRecord) {
+                    return null;
+                }
+            }
+
             return $user->hasRole('administrator') ? true : null;
         });
 

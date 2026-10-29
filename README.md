@@ -11,8 +11,8 @@ milestones, regras de negócio e requisitos definidos no SRS.
 | --- | ------------------------------------------------------- | ------------ |
 | M1  | Core + ACL (autenticação, usuários, perfis, permissões) | ✅ Concluído |
 | M2  | UI/UX + Identidade Visual (Design System)               | ✅ Concluído |
-| M3  | Estudantes (cadastro)                                   | ⏳ Próximo   |
-| M4  | Triagem + Atendimentos                                  | Pendente     |
+| M3  | Estudantes (cadastro)                                   | ✅ Concluído |
+| M4  | Triagem + Atendimentos                                  | ⏳ Próximo   |
 | M5  | Acompanhamento + Histórico                              | Pendente     |
 | M6  | Encaminhamentos                                         | Pendente     |
 | M7  | Agenda                                                  | Pendente     |
@@ -29,6 +29,13 @@ milestones, regras de negócio e requisitos definidos no SRS.
   (avatar com dropdown, breadcrumbs), Design System sobre Tailwind CSS v4 /
   shadcn-svelte / bits-ui / lucide-svelte com a paleta de cores do NAE, e
   Dashboard inicial com os dados reais de perfil/permissões do usuário.
+- **M3 — Estudantes:** cadastro, edição, listagem, pesquisa (nome/matrícula)
+  e filtros (curso/situação); inativação/reativação com soft delete (RN-013);
+  CID (criptografado no banco) e documentos anexados (disco privado) como
+  dados sensíveis, visíveis apenas para quem cadastrou (RN-012), inclusive
+  para o administrador (pendência §28.13); nova permissão
+  `students.sensitive`; auditoria via Spatie Activity Log sem gravar conteúdo
+  sensível no log.
 
 ## Stack
 
