@@ -21,7 +21,7 @@
 </script>
 
 <SidebarGroup class="px-2 py-0">
-    <SidebarGroupLabel>Platform</SidebarGroupLabel>
+    <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
     <SidebarMenu>
         {#each items as item (toUrl(item.href))}
             <SidebarMenuItem>
@@ -34,12 +34,19 @@
                         <Link
                             {...props}
                             href={toUrl(item.href)}
-                            class={props.class}
+                            class={`${props.class} h-auto min-h-8`}
                         >
                             {#if item.icon}
                                 <item.icon class="size-4 shrink-0" />
                             {/if}
-                            <span>{item.title}</span>
+                            <span class="leading-tight">{item.title}</span>
+                            {#if item.badge}
+                                <span
+                                    class="ml-auto shrink-0 rounded border border-sidebar-border px-1.5 py-px font-mono text-[10px] text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden"
+                                >
+                                    {item.badge}
+                                </span>
+                            {/if}
                         </Link>
                     {/snippet}
                 </SidebarMenuButton>

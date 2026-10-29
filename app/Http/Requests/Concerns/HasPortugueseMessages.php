@@ -28,6 +28,11 @@ trait HasPortugueseMessages
             'regex' => 'O formato do campo :attribute é inválido.',
             'file' => 'Selecione um arquivo válido.',
             'mimes' => 'O arquivo deve ser do tipo: :values.',
+            'document.max' => 'O arquivo não pode ter mais que :max KB.',
+            'array' => 'O campo :attribute é inválido.',
+            'boolean' => 'O campo :attribute é inválido.',
+            'consent.accepted' => 'É necessário registrar o consentimento do estudante (ou responsável) para o tratamento dos dados pelo NAE.',
+            'prohibited' => 'Você não tem permissão para enviar :attribute.',
         ];
     }
 }

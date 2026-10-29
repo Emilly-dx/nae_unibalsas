@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Student;
+use App\Models\StudentDocument;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Activitylog\Models\Activity;
 
@@ -18,6 +21,9 @@ function validStudentData(array $overrides = []): array
         'guardian_name' => null,
         'guardian_phone' => null,
         'guardian_relationship' => null,
+        'modality' => 'presential',
+        'shift' => 'evening',
+        'consent' => '1',
         ...$overrides,
     ];
 }
@@ -159,6 +165,83 @@ describe('cadastro e edição (RF-013, RF-014)', function () {
                 'birth_date' => now()->addDay()->toDateString(),
             ]))
             ->assertSessionHasErrors(['sex', 'birth_date']);
+    });
+});
+
+describe('campos do wireframe (nome social, acessibilidade, LGPD)', function () {
+    test('cadastro exige o consentimento e registra quando foi dado', function () {
+        $user = userWithPermissions('students.create');
+
+        $this->actingAs($user)
+            ->post(route('students.store'), validStudentData(['consent' => null]))
+            ->assertSessionHasErrors('consent');
+
+        $this->actingAs($user)->post(route('students.store'), validStudentData());
+
+        expect(Student::query()->sole()->consent_at)->not->toBeNull();
+    });
+
+    test('salva turno, modalidade, nome social e recursos de acessibilidade', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData([
+                'social_name' => 'Mari',
+                'modality' => 'distance',
+                'needs_accessibility' => '1',
+                'accessibility_resources' => ['extra_time', 'libras_interpreter'],
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $student = Student::query()->sole();
+
+        expect($student->social_name)->toBe('Mari')
+            ->and($student->modality->label())->toBe('EAD')
+            ->and($student->shift?->label())->toBe('Noturno')
+            ->and($student->accessibilityResourceLabels())->toBe(['Tempo adicional em provas', 'Intérprete de Libras']);
+    });
+
+    test('recursos são descartados quando não há necessidade de acessibilidade', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData([
+                'needs_accessibility' => '0',
+                'accessibility_resources' => ['extra_time'],
+            ]));
+
+        expect(Student::query()->sole()->accessibility_resources)->toBe([]);
+    });
+
+    test('rejeita recurso de acessibilidade desconhecido', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData([
+                'needs_accessibility' => '1',
+                'accessibility_resources' => ['teletransporte'],
+            ]))
+            ->assertSessionHasErrors('accessibility_resources.0');
+    });
+
+    test('laudo enviado no cadastro vira documento sensível do autor', function () {
+        Storage::fake('local');
+        $user = userWithPermissions('students.create', 'students.sensitive');
+
+        $this->actingAs($user)->post(route('students.store'), validStudentData([
+            'document' => UploadedFile::fake()->create('laudo.pdf', 50, 'application/pdf'),
+        ]))->assertSessionHasNoErrors();
+
+        $document = StudentDocument::query()->sole();
+
+        expect($document->uploaded_by)->toBe($user->id)
+            ->and($document->title)->toBe('Laudo ou documento de apoio');
+    });
+
+    test('sem students.sensitive não é possível enviar laudo no cadastro', function () {
+        Storage::fake('local');
+
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData([
+                'document' => UploadedFile::fake()->create('laudo.pdf', 50, 'application/pdf'),
+            ]))
+            ->assertSessionHasErrors('document');
+
+        expect(Student::query()->count())->toBe(0);
     });
 });
 

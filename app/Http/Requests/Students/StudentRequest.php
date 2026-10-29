@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests\Students;
 
+use App\Enums\AccessibilityResource;
+use App\Enums\Modality;
 use App\Enums\Sex;
+use App\Enums\Shift;
 use App\Http\Requests\Concerns\HasPortugueseMessages;
 use App\Models\Student;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -31,6 +34,9 @@ abstract class StudentRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
+            'social_name' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before:today'],
+            'sex' => ['nullable', Rule::enum(Sex::class)],
             'registration' => [
                 'required', 'string', 'max:30',
                 // Inclui inativos: matrícula de estudante inativo deve ser reativada, não duplicada.
@@ -39,14 +45,42 @@ abstract class StudentRequest extends FormRequest
             ],
             'course' => ['required', 'string', 'max:255'],
             'period' => ['required', 'integer', 'between:1,12'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
-            'sex' => ['nullable', Rule::enum(Sex::class)],
+            'shift' => ['nullable', Rule::enum(Shift::class)],
+            'modality' => ['required', Rule::enum(Modality::class)],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
             'guardian_phone' => ['nullable', 'string', 'max:20'],
             'guardian_relationship' => ['nullable', 'string', 'max:50'],
+            'needs_accessibility' => ['boolean'],
+            'accessibility_resources' => ['nullable', 'array'],
+            'accessibility_resources.*' => [Rule::enum(AccessibilityResource::class)],
+            'has_external_follow_up' => ['boolean'],
+            ...$this->extraRules(),
         ];
+    }
+
+    /**
+     * Regras específicas de cadastro/edição.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    abstract protected function extraRules(): array;
+
+    /**
+     * Dados do estudante, sem os campos de controle (consentimento, laudo).
+     *
+     * @return array<string, mixed>
+     */
+    public function studentData(): array
+    {
+        $data = $this->safe()->except(['consent', 'document', 'document_title']);
+
+        if (! ($data['needs_accessibility'] ?? false)) {
+            $data['accessibility_resources'] = [];
+        }
+
+        return $data;
     }
 
     /**
@@ -63,9 +97,17 @@ abstract class StudentRequest extends FormRequest
             'phone' => 'telefone',
             'birth_date' => 'data de nascimento',
             'sex' => 'sexo',
-            'guardian_name' => 'nome do responsável',
-            'guardian_phone' => 'telefone do responsável',
-            'guardian_relationship' => 'parentesco do responsável',
+            'social_name' => 'nome social',
+            'shift' => 'turno',
+            'modality' => 'modalidade',
+            'guardian_name' => 'contato de emergência',
+            'guardian_phone' => 'telefone de emergência',
+            'guardian_relationship' => 'parentesco do contato de emergência',
+            'accessibility_resources' => 'recursos de acessibilidade',
+            'accessibility_resources.*' => 'recurso de acessibilidade',
+            'consent' => 'consentimento',
+            'document' => 'laudo ou documento',
+            'document_title' => 'título do documento',
         ];
     }
 
@@ -75,6 +117,9 @@ abstract class StudentRequest extends FormRequest
             'registration' => is_string($this->input('registration'))
                 ? trim($this->input('registration'))
                 : $this->input('registration'),
+            'modality' => $this->input('modality') ?: 'presential',
+            'needs_accessibility' => $this->boolean('needs_accessibility'),
+            'has_external_follow_up' => $this->boolean('has_external_follow_up'),
         ]);
     }
 }

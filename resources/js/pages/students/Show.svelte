@@ -4,6 +4,7 @@
 
     export const layout = (props: { student: Student }) => ({
         breadcrumbs: [
+            { title: 'Painel', href: '/dashboard' },
             { title: 'Estudantes', href: index() },
             { title: props.student.name, href: show(props.student.id) },
         ],
@@ -118,12 +119,12 @@
 
 <AppHead title={student.name} />
 
-<div class="flex h-full flex-1 flex-col gap-6 p-4">
+<div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
     <!-- Cabeçalho -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div class="space-y-1">
             <div class="flex flex-wrap items-center gap-2">
-                <h1 class="text-xl font-semibold tracking-tight">{student.name}</h1>
+                <h1 class="text-xl font-semibold tracking-tight">{student.social_name || student.name}</h1>
                 {#if student.active}
                     <Badge variant="secondary">Ativo</Badge>
                 {:else}
@@ -201,8 +202,11 @@
                 </CardHeader>
                 <CardContent>
                     <dl class="grid gap-4 sm:grid-cols-2">
+                        {#if student.social_name}{@render field('Nome civil', student.name)}{/if}
                         {@render field('Curso', student.course)}
                         {@render field('Período', `${student.period}º`)}
+                        {@render field('Turno', student.shift_label)}
+                        {@render field('Modalidade', student.modality_label)}
                         {@render field(
                             'Data de nascimento',
                             student.birth_date
@@ -218,7 +222,7 @@
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Responsável</CardTitle>
+                    <CardTitle>Contato de emergência</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {#if student.guardian_name}
@@ -229,9 +233,33 @@
                         </dl>
                     {:else}
                         <p class="text-sm text-muted-foreground">
-                            Nenhum responsável informado.
+                            Nenhum contato de emergência informado.
                         </p>
                     {/if}
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Apoio e acessibilidade</CardTitle>
+                </CardHeader>
+                <CardContent class="space-y-3 text-sm">
+                    <dl class="grid gap-4 sm:grid-cols-2">
+                        {@render field('Necessita de recursos de acessibilidade', student.needs_accessibility ? 'Sim' : 'Não')}
+                        {@render field('Acompanhamento externo', student.has_external_follow_up ? 'Sim' : 'Não')}
+                    </dl>
+                    {#if student.accessibility_resource_labels.length > 0}
+                        <div class="flex flex-wrap gap-1.5">
+                            {#each student.accessibility_resource_labels as resource (resource)}
+                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">{resource}</span>
+                            {/each}
+                        </div>
+                    {/if}
+                    <p class="text-xs text-muted-foreground">
+                        {student.consent_at
+                            ? `Consentimento (LGPD) registrado em ${formatDate(student.consent_at)}.`
+                            : 'Consentimento (LGPD) ainda não registrado — edite o cadastro para registrar.'}
+                    </p>
                 </CardContent>
             </Card>
 

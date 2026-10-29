@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Students;
 
+use App\Actions\Students\AttachStudentDocument;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Students\StoreStudentDocumentRequest;
 use App\Models\Student;
@@ -21,7 +22,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class StudentDocumentController extends Controller
 {
-    public function store(StoreStudentDocumentRequest $request, Student $student): RedirectResponse
+    public function store(StoreStudentDocumentRequest $request, Student $student, AttachStudentDocument $attach): RedirectResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -29,20 +30,7 @@ class StudentDocumentController extends Controller
         /** @var UploadedFile $file */
         $file = $request->file('file');
 
-        $path = $file->store("students/{$student->id}/documents", StudentDocument::DISK);
-
-        abort_if($path === false, 500, 'Não foi possível salvar o arquivo.');
-
-        $document = new StudentDocument([
-            'title' => $request->validated('title'),
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
-            'size' => $file->getSize(),
-        ]);
-        $document->student()->associate($student);
-        $document->uploaded_by = $user->id;
-        $document->save();
+        $attach->handle($student, $user, $file, (string) $request->validated('title'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Documento anexado.']);
 

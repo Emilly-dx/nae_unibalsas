@@ -27,23 +27,36 @@ trait HasRolesAndPermissions
      */
     public function allPermissions(): Collection
     {
-        return Cache::rememberForever(
-            $this->permissionsCacheKey(),
-            fn () => $this->roles()
-                ->with('permissions')
-                ->get()
-                ->flatMap(fn (Role $role) => $role->permissions)
-                ->unique('id')
-                ->values(),
-        );
+        return Permission::query()
+            ->whereIn('slug', $this->permissionSlugs())
+            ->get()
+            ->toBase();
     }
 
     /**
+     * Slugs das permissões do usuário, em cache (`permissions.user.{id}`).
+     *
+     * Só texto vai para o cache: o Database Cache serializa os valores e,
+     * com `cache.serializable_classes = false`, models em cache voltariam
+     * como __PHP_Incomplete_Class.
+     *
      * @return Collection<int, string>
      */
     public function permissionSlugs(): Collection
     {
-        return $this->allPermissions()->pluck('slug');
+        /** @var list<string> $slugs */
+        $slugs = Cache::rememberForever(
+            $this->permissionsCacheKey(),
+            fn (): array => $this->roles()
+                ->with('permissions')
+                ->get()
+                ->flatMap(fn (Role $role) => $role->permissions->pluck('slug'))
+                ->unique()
+                ->values()
+                ->all(),
+        );
+
+        return collect($slugs);
     }
 
     public function hasPermissionTo(string $slug): bool

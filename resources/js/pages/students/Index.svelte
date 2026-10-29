@@ -2,7 +2,10 @@
     import { index } from '@/routes/students';
 
     export const layout = {
-        breadcrumbs: [{ title: 'Estudantes', href: index() }],
+        breadcrumbs: [
+            { title: 'Painel', href: '/dashboard' },
+            { title: 'Estudantes', href: index() },
+        ],
     };
 </script>
 
@@ -10,16 +13,20 @@
     import { Link, page, router } from '@inertiajs/svelte';
     import ChevronLeft from '@lucide/svelte/icons/chevron-left';
     import ChevronRight from '@lucide/svelte/icons/chevron-right';
+    import Download from '@lucide/svelte/icons/download';
     import Plus from '@lucide/svelte/icons/plus';
     import Search from '@lucide/svelte/icons/search';
     import Users from '@lucide/svelte/icons/users';
+    import { toast } from 'svelte-sonner';
     import AppHead from '@/components/AppHead.svelte';
     import Heading from '@/components/Heading.svelte';
     import { Badge } from '@/components/ui/badge';
     import { Button } from '@/components/ui/button';
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';
+    import { getInitials } from '@/lib/initials';
     import { can } from '@/lib/permissions';
+    import { cn } from '@/lib/utils';
     import { create, show } from '@/routes/students';
     import type { Paginated, StudentListItem } from '@/types';
 
@@ -48,6 +55,12 @@
     let status = $state<Filters['status']>(filters.status);
 
     const canCreate = $derived(can(page.props.auth, 'students.create'));
+    const demo = $derived(page.props.demoScreens);
+
+    let selectedId = $state<number | null>(null);
+    const selected = $derived(
+        students.data.find((student) => student.id === selectedId) ?? students.data[0] ?? null,
+    );
     const hasFilters = $derived(
         search !== '' || course !== '' || status !== 'active',
     );
@@ -97,13 +110,18 @@
 
 <AppHead title="Estudantes" />
 
-<div class="flex h-full flex-1 flex-col gap-6 p-4">
+<div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <Heading
             title="Estudantes"
-            description="Estudantes encaminhados e atendidos pelo NAE."
+            description="Cadastro e histórico dos estudantes atendidos pelo NAE."
         />
 
+        <div class="flex flex-wrap gap-2">
+        <Button variant="outline" onclick={() => toast.info('A exportação será implementada no módulo de relatórios (M8).')}>
+            <Download class="size-4" />
+            Exportar
+        </Button>
         {#if canCreate}
             <Button asChild>
                 {#snippet children(props)}
@@ -114,9 +132,10 @@
                 {/snippet}
             </Button>
         {/if}
+        </div>
     </div>
 
-    <div class="grid gap-3 rounded-lg border p-4 md:grid-cols-[2fr_1.5fr_1fr_auto] md:items-end">
+    <div class="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[2fr_1.5fr_1fr_auto] md:items-end">
         <div class="grid gap-2">
             <Label for="search">Pesquisar</Label>
             <div class="relative">
@@ -183,54 +202,115 @@
             </div>
         </div>
     {:else}
-        <div class="overflow-x-auto rounded-lg border">
+        <div class="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
+        <div class="overflow-hidden rounded-xl border bg-card">
+        <div class="overflow-x-auto">
             <table class="w-full min-w-[640px] text-sm">
                 <thead class="bg-muted/50 text-left text-muted-foreground">
                     <tr>
-                        <th class="px-4 py-3 font-medium">Nome</th>
-                        <th class="px-4 py-3 font-medium">Matrícula</th>
-                        <th class="px-4 py-3 font-medium">Curso</th>
-                        <th class="px-4 py-3 font-medium">Período</th>
+                        <th class="px-5 py-3 font-medium">Estudante</th>
+                        <th class="px-4 py-3 font-medium">Curso / período</th>
+                        <th class="px-4 py-3 font-medium">Modalidade</th>
                         <th class="px-4 py-3 font-medium">Situação</th>
-                        <th class="px-4 py-3"><span class="sr-only">Ações</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     {#each students.data as student (student.id)}
-                        <tr class="border-t transition-colors hover:bg-muted/30">
-                            <td class="px-4 py-3 font-medium">
-                                <Link
-                                    href={show(student.id).url}
-                                    class="hover:underline"
-                                >
-                                    {student.name}
-                                </Link>
+                        <tr
+                            class={cn(
+                                'cursor-pointer border-t transition-colors hover:bg-muted/40',
+                                selected?.id === student.id && 'bg-muted/60',
+                            )}
+                            onclick={() => (selectedId = student.id)}
+                        >
+                            <td class="px-5 py-3">
+                                <button type="button" class="text-left font-medium hover:underline" onclick={() => (selectedId = student.id)}>
+                                    {student.social_name || student.name}
+                                </button>
+                                <p class="font-mono text-xs text-muted-foreground">{student.registration}</p>
                             </td>
-                            <td class="px-4 py-3 tabular-nums">
-                                {student.registration}
-                            </td>
-                            <td class="px-4 py-3">{student.course}</td>
-                            <td class="px-4 py-3">{student.period}º</td>
                             <td class="px-4 py-3">
-                                {#if student.active}
-                                    <Badge variant="secondary">Ativo</Badge>
-                                {:else}
-                                    <Badge variant="outline">Inativo</Badge>
-                                {/if}
+                                <p>{student.course}</p>
+                                <p class="text-xs text-muted-foreground">{student.period}º período</p>
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <Button variant="ghost" size="sm" asChild>
-                                    {#snippet children(props)}
-                                        <Link {...props} href={show(student.id).url}>
-                                            Ver
-                                        </Link>
-                                    {/snippet}
-                                </Button>
+                            <td class="px-4 py-3">
+                                <p>{student.modality_label}</p>
+                                {#if student.shift_label}<p class="text-xs text-muted-foreground">{student.shift_label}</p>{/if}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    {#if student.active}
+                                        <Badge variant="secondary">Ativo</Badge>
+                                    {:else}
+                                        <Badge variant="outline">Inativo</Badge>
+                                    {/if}
+                                    {#if student.needs_accessibility}
+                                        <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">Acessibilidade</span>
+                                    {/if}
+                                </div>
                             </td>
                         </tr>
                     {/each}
                 </tbody>
             </table>
+        </div>
+        </div>
+
+        {#if selected}
+            <aside class="flex flex-col gap-4 rounded-xl border bg-card p-5 xl:sticky xl:top-4 xl:self-start">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-accent font-semibold text-accent-foreground">
+                        {getInitials(selected.social_name || selected.name)}
+                    </span>
+                    <div class="min-w-0">
+                        <p class="truncate font-semibold">{selected.social_name || selected.name}</p>
+                        <p class="truncate text-xs text-muted-foreground">{selected.course} · {selected.period}º período</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    {#if selected.active}<Badge variant="secondary">Ativo</Badge>{:else}<Badge variant="outline">Inativo</Badge>{/if}
+                    <Badge variant="outline">{selected.modality_label}</Badge>
+                </div>
+                <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                    {#if selected.social_name}<dt class="text-muted-foreground">Nome civil</dt><dd>{selected.name}</dd>{/if}
+                    <dt class="text-muted-foreground">Matrícula</dt><dd class="font-mono">{selected.registration}</dd>
+                    <dt class="text-muted-foreground">E-mail</dt><dd class="truncate">{selected.email || '—'}</dd>
+                    <dt class="text-muted-foreground">Telefone</dt><dd>{selected.phone || '—'}</dd>
+                    <dt class="text-muted-foreground">Turno</dt><dd>{selected.shift_label || '—'}</dd>
+                </dl>
+                {#if selected.accessibility_resources.length > 0}
+                    <div>
+                        <p class="mb-1.5 text-sm font-medium">Recursos de acessibilidade</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            {#each selected.accessibility_resources as resource (resource)}
+                                <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">{resource}</span>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+                <div class="border-t pt-4">
+                    <p class="mb-2 text-sm font-semibold">Histórico</p>
+                    <p class="text-sm text-muted-foreground">
+                        Solicitações, triagem e atendimentos aparecerão aqui com o módulo M4.
+                    </p>
+                </div>
+                <div class="mt-2 flex flex-col gap-2">
+                    {#if demo && selected.active}
+                        <Button asChild>
+                            {#snippet children(props)}
+                                <Link {...props} href="/atendimentos/registrar">Registrar atendimento</Link>
+                            {/snippet}
+                        </Button>
+                        <Button variant="outline" asChild>
+                            {#snippet children(props)}<Link {...props} href="/encaminhamentos">Novo encaminhamento</Link>{/snippet}
+                        </Button>
+                    {/if}
+                    <Button variant="ghost" asChild>
+                        {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro completo</Link>{/snippet}
+                    </Button>
+                </div>
+            </aside>
+        {/if}
         </div>
 
         <div class="flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">

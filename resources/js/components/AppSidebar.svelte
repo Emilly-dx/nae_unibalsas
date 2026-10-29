@@ -1,6 +1,9 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
+    import CalendarDays from '@lucide/svelte/icons/calendar-days';
+    import ChartColumn from '@lucide/svelte/icons/chart-column';
     import LayoutGrid from '@lucide/svelte/icons/layout-grid';
+    import Route from '@lucide/svelte/icons/route';
     import Users from '@lucide/svelte/icons/users';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
@@ -29,7 +32,7 @@
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: 'Painel',
             href: dashboard(),
             icon: LayoutGrid,
         },
@@ -38,12 +41,37 @@
             href: studentsIndex(),
             icon: Users,
             permission: 'students.view',
+            badge: 'M3',
+        },
+        // Telas de demonstração (protótipo navegável, dados fictícios).
+        {
+            title: 'Triagem e atendimentos',
+            href: '/triagem',
+            icon: CalendarDays,
+            badge: 'M4',
+            demo: true,
+        },
+        {
+            title: 'Encaminhamentos',
+            href: '/encaminhamentos',
+            icon: Route,
+            badge: 'M6',
+            demo: true,
+        },
+        {
+            title: 'Relatórios',
+            href: '/relatorios',
+            icon: ChartColumn,
+            badge: 'M8',
+            demo: true,
         },
     ];
 
     const visibleNavItems = $derived(
         mainNavItems.filter(
-            (item) => !item.permission || can(page.props.auth, item.permission),
+            (item) =>
+                (!item.demo || page.props.demoScreens) &&
+                (!item.permission || can(page.props.auth, item.permission)),
         ),
     );
 </script>
