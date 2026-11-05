@@ -2,17 +2,14 @@
 
 Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 
-Consulte [`CLAUDE.md`](./CLAUDE.md) para o contexto completo do projeto: escopo,
-milestones, regras de negócio e requisitos definidos no SRS.
-
 ## Progresso
 
 | ID  | Milestone                                               | Status       |
 | --- | ------------------------------------------------------- | ------------ |
-| M1  | Core + ACL (autenticação, usuários, perfis, permissões) | ✅ Concluído |
-| M2  | UI/UX + Identidade Visual (Design System)               | ✅ Concluído |
-| M3  | Estudantes (cadastro)                                   | ✅ Concluído |
-| M4  | Triagem + Atendimentos                                  | ⏳ Próximo   |
+| M1  | Core + ACL (autenticação, usuários, perfis, permissões) | Concluído |
+| M2  | UI/UX + Identidade Visual (Design System)               | Concluído |
+| M3  | Estudantes (cadastro)                                   | Concluído |
+| M4  | Triagem + Atendimentos                                  | Próximo   |
 | M5  | Acompanhamento + Histórico                              | Pendente     |
 | M6  | Encaminhamentos                                         | Pendente     |
 | M7  | Agenda                                                  | Pendente     |
