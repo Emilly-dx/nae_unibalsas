@@ -17,6 +17,17 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 | M9  | Segurança + Auditoria + LGPD                            | Pendente     |
 | M10 | Validação + Usabilidade (SUS)                           | Pendente     |
 
+## Protótipo navegável (M4, M6 e M8)
+
+As telas de **Triagem e Atendimentos**, **Encaminhamentos** e **Relatórios** já
+estão disponíveis como **protótipo navegável**, com dados fictícios, para
+validação com a equipe do NAE. Nessas telas nada é salvo no banco; elas
+seguem os wireframes aprovados e servem para avaliar o fluxo e o layout antes
+da implementação real.
+
+O que já funciona de verdade: login, perfis e permissões (M1), interface (M2)
+e cadastro de estudantes (M3).
+
 - **M1 — Core + ACL:** models `Module`/`Permission`/`Role`/`User`, migrations,
   seeders com os módulos/permissões/perfis iniciais do SRS, `Gate::before`
   para o `administrator`, middleware `permission:<slug>`, cache de
@@ -49,7 +60,7 @@ npm install
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
-php artisan migrate
+php artisan migrate --seed
 npm run build
 ```
 
@@ -58,6 +69,15 @@ npm run build
 ```bash
 composer run dev
 ```
+
+## Acesso para demonstração
+
+Após rodar `composer run dev`, acesse http://localhost:8000 e entre com:
+
+- **E-mail:** test@example.com
+- **Senha:** password
+
+Esse usuário é criado pelo seeder, tem perfil de Administrador e acesso a todos os módulos.
 
 ## Testes e qualidade
 
