@@ -95,6 +95,22 @@ class Student extends Model
     }
 
     /**
+     * @return HasMany<Attendance, $this>
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    /**
+     * @return HasMany<SupportRequest, $this>
+     */
+    public function supportRequests(): HasMany
+    {
+        return $this->hasMany(SupportRequest::class);
+    }
+
+    /**
      * @return HasMany<StudentDocument, $this>
      */
     public function documents(): HasMany

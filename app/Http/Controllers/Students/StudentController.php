@@ -9,10 +9,13 @@ use App\Enums\Shift;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Students\StoreStudentRequest;
 use App\Http\Requests\Students\UpdateStudentRequest;
+use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\StudentDisability;
 use App\Models\StudentDocument;
+use App\Models\SupportRequest;
 use App\Models\User;
+use App\Support\AttendancePresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -131,6 +134,27 @@ class StudentController extends Controller
                     ])
                 : [],
             'canManageSensitive' => $canManageSensitive,
+            // Histórico (RN-009): só metadados; o conteúdo dos atendimentos é sigiloso.
+            'history' => [
+                'attendances' => $user->can('attendances.view')
+                    ? $student->attendances()->with(['student', 'professional'])->latest('scheduled_at')->get()
+                        ->map(fn (Attendance $attendance): array => AttendancePresenter::summary($attendance))
+                    : null,
+                'requests' => $user->can('triage.view')
+                    ? $student->supportRequests()->latest()->get()
+                        ->map(fn (SupportRequest $item): array => [
+                            'id' => $item->id,
+                            'date' => $item->created_at?->format('d/m/Y'),
+                            'origin' => $item->origin->label(),
+                            'status_label' => $item->status->label(),
+                        ])
+                    : null,
+            ],
+            'can' => [
+                'createRequest' => $user->can('triage.create') && $student->deleted_at === null,
+                'schedule' => $user->can('attendances.schedule') && $student->deleted_at === null,
+                'register' => $user->can('attendances.create') && $student->deleted_at === null,
+            ],
         ]);
     }
 

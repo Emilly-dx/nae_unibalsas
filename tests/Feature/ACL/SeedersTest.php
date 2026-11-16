@@ -11,7 +11,7 @@ test('the initial modules from the SRS are seeded', function () {
     (new ModuleSeeder)->run();
 
     expect(Module::query()->pluck('slug')->sort()->values()->all())->toBe([
-        'acl', 'attendances', 'profiles', 'referrals', 'reports', 'students', 'users',
+        'acl', 'attendances', 'profiles', 'referrals', 'reports', 'students', 'triage', 'users',
     ]);
 });
 
@@ -19,7 +19,7 @@ test('the initial permissions from the SRS are seeded under their module', funct
     (new ModuleSeeder)->run();
     (new PermissionSeeder)->run();
 
-    expect(Permission::query()->count())->toBe(28);
+    expect(Permission::query()->count())->toBe(32);
     expect(Permission::query()->where('slug', 'acl.assign_roles')->first()->module->slug)->toBe('acl');
     expect(Permission::query()->where('slug', 'attendances.finish')->exists())->toBeTrue();
 });
@@ -36,5 +36,5 @@ test('seeders are idempotent', function () {
     (new ModuleSeeder)->run();
     (new ModuleSeeder)->run();
 
-    expect(Module::query()->count())->toBe(7);
+    expect(Module::query()->count())->toBe(8);
 });

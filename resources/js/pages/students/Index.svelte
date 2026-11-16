@@ -27,7 +27,9 @@
     import { getInitials } from '@/lib/initials';
     import { can } from '@/lib/permissions';
     import { cn } from '@/lib/utils';
+    import { create as registerAttendance } from '@/routes/attendances/register';
     import { create, show } from '@/routes/students';
+    import { create as createRequest } from '@/routes/triage/requests';
     import type { Paginated, StudentListItem } from '@/types';
 
     type Filters = {
@@ -288,25 +290,28 @@
                         </div>
                     </div>
                 {/if}
-                <div class="border-t pt-4">
-                    <p class="mb-2 text-sm font-semibold">Histórico</p>
-                    <p class="text-sm text-muted-foreground">
-                        Solicitações, triagem e atendimentos aparecerão aqui com o módulo M4.
-                    </p>
-                </div>
                 <div class="mt-2 flex flex-col gap-2">
-                    {#if demo && selected.active}
+                    {#if selected.active && can(page.props.auth, 'attendances.create')}
                         <Button asChild>
                             {#snippet children(props)}
-                                <Link {...props} href="/atendimentos/registrar">Registrar atendimento</Link>
+                                <Link {...props} href={registerAttendance({ query: { estudante: selected.id } }).url}>Registrar atendimento</Link>
                             {/snippet}
                         </Button>
+                    {/if}
+                    {#if selected.active && can(page.props.auth, 'triage.create')}
+                        <Button variant="outline" asChild>
+                            {#snippet children(props)}
+                                <Link {...props} href={createRequest({ query: { estudante: selected.id } }).url}>Nova solicitação de apoio</Link>
+                            {/snippet}
+                        </Button>
+                    {/if}
+                    {#if demo && selected.active}
                         <Button variant="outline" asChild>
                             {#snippet children(props)}<Link {...props} href="/encaminhamentos">Novo encaminhamento</Link>{/snippet}
                         </Button>
                     {/if}
                     <Button variant="ghost" asChild>
-                        {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro completo</Link>{/snippet}
+                        {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro e histórico</Link>{/snippet}
                     </Button>
                 </div>
             </aside>

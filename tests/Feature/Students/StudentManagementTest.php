@@ -292,3 +292,14 @@ describe('auditoria (RF-051 a RF-054)', function () {
             ->and($activities[1]->causer_id)->toBe($user->id);
     });
 });
+
+test('telefones são salvos só com dígitos e validados com DDD', function () {
+    $user = userWithPermissions('students.create');
+
+    $this->actingAs($user)->post(route('students.store'), validStudentData(['phone' => '(99) 98888-7777']));
+    expect(Student::query()->sole()->phone)->toBe('99988887777');
+
+    $this->actingAs($user)
+        ->post(route('students.store'), validStudentData(['registration' => '999', 'phone' => '9999-0000']))
+        ->assertSessionHasErrors(['phone' => 'O campo telefone deve ter entre 10 e 11 dígitos (DDD + número).']);
+});

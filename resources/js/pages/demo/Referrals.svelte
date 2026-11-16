@@ -14,9 +14,9 @@
     import { toast } from 'svelte-sonner';
     import AppHead from '@/components/AppHead.svelte';
     import DemoNotice from '@/components/demo/DemoNotice.svelte';
-    import FieldSelect from '@/components/demo/FieldSelect.svelte';
-    import FieldTextarea from '@/components/demo/FieldTextarea.svelte';
-    import Segmented from '@/components/demo/Segmented.svelte';
+    import FieldSelect from '@/components/form/FieldSelect.svelte';
+    import FieldTextarea from '@/components/form/FieldTextarea.svelte';
+    import Segmented from '@/components/form/Segmented.svelte';
     import { Button } from '@/components/ui/button';
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';

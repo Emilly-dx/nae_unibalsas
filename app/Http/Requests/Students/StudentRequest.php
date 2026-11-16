@@ -48,9 +48,9 @@ abstract class StudentRequest extends FormRequest
             'shift' => ['nullable', Rule::enum(Shift::class)],
             'modality' => ['required', Rule::enum(Modality::class)],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'digits_between:10,11'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
-            'guardian_phone' => ['nullable', 'string', 'max:20'],
+            'guardian_phone' => ['nullable', 'digits_between:10,11'],
             'guardian_relationship' => ['nullable', 'string', 'max:50'],
             'needs_accessibility' => ['boolean'],
             'accessibility_resources' => ['nullable', 'array'],
@@ -120,6 +120,16 @@ abstract class StudentRequest extends FormRequest
             'modality' => $this->input('modality') ?: 'presential',
             'needs_accessibility' => $this->boolean('needs_accessibility'),
             'has_external_follow_up' => $this->boolean('has_external_follow_up'),
+            'phone' => $this->onlyDigits($this->input('phone')),
+            'guardian_phone' => $this->onlyDigits($this->input('guardian_phone')),
         ]);
+    }
+
+    /**
+     * Mantém apenas os dígitos (ex.: "(99) 99999-0000" → "99999990000").
+     */
+    private function onlyDigits(mixed $value): mixed
+    {
+        return is_string($value) ? preg_replace('/\D+/', '', $value) : $value;
     }
 }

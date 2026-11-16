@@ -4,29 +4,39 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 
 ## Progresso
 
-| ID  | Milestone                                               | Status       |
-| --- | ------------------------------------------------------- | ------------ |
-| M1  | Core + ACL (autenticação, usuários, perfis, permissões) | Concluído    |
-| M2  | UI/UX + Identidade Visual (Design System)               | Concluído    |
-| M3  | Estudantes (cadastro)                                   | Concluído    |
-| M4  | Triagem + Atendimentos                                  | Próximo      |
-| M5  | Acompanhamento + Histórico                              | Pendente     |
-| M6  | Encaminhamentos                                         | Pendente     |
-| M7  | Agenda                                                  | Pendente     |
-| M8  | Relatórios + Indicadores                                | Pendente     |
-| M9  | Segurança + Auditoria + LGPD                            | Pendente     |
-| M10 | Validação + Usabilidade (SUS)                           | Pendente     |
+| ID  | Milestone                                               | Status    |
+| --- | ------------------------------------------------------- | --------- |
+| M1  | Core + ACL (autenticação, usuários, perfis, permissões) | Concluído |
+| M2  | UI/UX + Identidade Visual (Design System)               | Concluído |
+| M3  | Estudantes (cadastro)                                   | Concluído |
+| M4  | Triagem + Atendimentos                                  | Concluído |
+| M5  | Acompanhamento + Histórico                              | Próximo   |
+| M6  | Encaminhamentos                                         | Pendente  |
+| M7  | Agenda                                                  | Pendente  |
+| M8  | Relatórios + Indicadores                                | Pendente  |
+| M9  | Segurança + Auditoria + LGPD                            | Pendente  |
+| M10 | Validação + Usabilidade (SUS)                           | Pendente  |
 
-## Protótipo navegável (M4, M6 e M8)
+## Protótipo navegável (M6 e M8)
 
-As telas de **Triagem e Atendimentos**, **Encaminhamentos** e **Relatórios** já
-estão disponíveis como **protótipo navegável**, com dados fictícios, para
-validação com a equipe do NAE. Nessas telas nada é salvo no banco; elas
-seguem os wireframes aprovados e servem para avaliar o fluxo e o layout antes
-da implementação real.
+As telas de **Encaminhamentos** e **Relatórios** estão disponíveis como
+**protótipo navegável**, com dados fictícios, para validação com a equipe do
+NAE. Nessas telas nada é salvo no banco. Para escondê-las:
+`NAE_DEMO_SCREENS=false` no `.env`.
 
-O que já funciona de verdade: login, perfis e permissões (M1), interface (M2)
-e cadastro de estudantes (M3).
+O que já funciona de verdade: login, perfis e permissões (M1), interface (M2),
+cadastro de estudantes (M3) e triagem + atendimentos (M4).
+
+### Dados de demonstração
+
+```bash
+php artisan db:seed --class=DemoDataSeeder
+```
+
+Cria estudantes, solicitações e atendimentos **fictícios** e uma conta para
+cada perfil (senha `password`): `psicopedagoga@nae.test`,
+`psicologa@nae.test`, `pedagoga@nae.test`, `coordenacao@nae.test` e
+`assistente@nae.test`. Não roda em produção.
 
 - **M1 — Core + ACL:** models `Module`/`Permission`/`Role`/`User`, migrations,
   seeders com os módulos/permissões/perfis iniciais do SRS, `Gate::before`
@@ -44,6 +54,18 @@ e cadastro de estudantes (M3).
   para o administrador (pendência §28.13); nova permissão
   `students.sensitive`; auditoria via Spatie Activity Log sem gravar conteúdo
   sensível no log.
+- **M4 — Triagem + Atendimentos:** Formulário de Solicitação do Apoio do NAE
+  e fila de triagem (prioritárias primeiro); decisão da triagem pela
+  psicopedagoga (agendar a 1ª conversa com profissional designado ou devolver
+  à coordenação); agendamentos com bloqueio de conflito de horário do
+  profissional; agenda semanal; registro do atendimento (data, início/término,
+  duração, tipo, modalidade, demanda, condução, combinados, próximo retorno)
+  e status (agendado, atendido, concluído, cancelado). Descrição da
+  solicitação, parecer e conteúdo dos atendimentos são criptografados; o
+  conteúdo do atendimento e o parecer só são visíveis para quem os registrou,
+  sem exceção para o administrador (RN-012). Novas permissões `triage.view`,
+  `triage.create`, `triage.perform` e `attendances.schedule`. Histórico do
+  estudante e Painel com dados reais.
 
 ## Stack
 

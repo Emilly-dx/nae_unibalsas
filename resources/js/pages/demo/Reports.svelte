@@ -15,7 +15,7 @@
     import { toast } from 'svelte-sonner';
     import AppHead from '@/components/AppHead.svelte';
     import DemoNotice from '@/components/demo/DemoNotice.svelte';
-    import FieldSelect from '@/components/demo/FieldSelect.svelte';
+    import FieldSelect from '@/components/form/FieldSelect.svelte';
     import { Button } from '@/components/ui/button';
     import { collectiveActions, monthlyAttendances, months, reportIndicators } from '@/lib/demo/data';
 

@@ -3,8 +3,8 @@
     import FileText from '@lucide/svelte/icons/file-text';
     import type { Snippet } from 'svelte';
     import InputError from '@/components/InputError.svelte';
-    import FieldSelect from '@/components/demo/FieldSelect.svelte';
-    import Segmented from '@/components/demo/Segmented.svelte';
+    import FieldSelect from '@/components/form/FieldSelect.svelte';
+    import Segmented from '@/components/form/Segmented.svelte';
     import { Button } from '@/components/ui/button';
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';

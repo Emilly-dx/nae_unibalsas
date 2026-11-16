@@ -47,18 +47,30 @@
     import { can } from '@/lib/permissions';
     import { edit } from '@/routes/students';
     import { download } from '@/routes/students/documents';
-    import type { StudentDisability, StudentDocument } from '@/types';
+    import { attendanceChipClass, attendanceLabel, attendanceStatusClass } from '@/lib/attendances';
+    import { cn } from '@/lib/utils';
+    import { create as scheduleAttendance, show as showAttendance } from '@/routes/attendances';
+    import { create as registerAttendance } from '@/routes/attendances/register';
+    import { create as createRequest, show as showRequest } from '@/routes/triage/requests';
+    import type { AttendanceSummary, StudentDisability, StudentDocument } from '@/types';
 
     let {
         student,
         disabilities,
         documents,
         canManageSensitive,
+        history,
+        can: allowed,
     }: {
         student: Student;
         disabilities: StudentDisability[];
         documents: StudentDocument[];
         canManageSensitive: boolean;
+        history: {
+            attendances: AttendanceSummary[] | null;
+            requests: { id: number; date: string | null; origin: string; status_label: string }[] | null;
+        };
+        can: { createRequest: boolean; schedule: boolean; register: boolean };
     } = $props();
 
     const auth = $derived(page.props.auth);
@@ -270,14 +282,68 @@
                         Histórico de atendimentos
                     </CardTitle>
                     <CardDescription>
-                        Atendimentos, encaminhamentos e acompanhamento do estudante.
+                        Solicitações e atendimentos do estudante. O conteúdo dos atendimentos é sigiloso.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <p class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                        O histórico será exibido aqui quando o módulo de
-                        atendimentos (M4/M5) estiver disponível.
-                    </p>
+                <CardContent class="space-y-4">
+                    {#if allowed.createRequest || allowed.schedule || allowed.register}
+                        <div class="flex flex-wrap gap-2">
+                            {#if allowed.createRequest}
+                                <Button variant="outline" size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={createRequest({ query: { estudante: student.id } }).url}>Nova solicitação</Link>{/snippet}
+                                </Button>
+                            {/if}
+                            {#if allowed.schedule}
+                                <Button variant="outline" size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={scheduleAttendance({ query: { estudante: student.id } }).url}>Agendar</Link>{/snippet}
+                                </Button>
+                            {/if}
+                            {#if allowed.register}
+                                <Button size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={registerAttendance({ query: { estudante: student.id } }).url}>Registrar atendimento</Link>{/snippet}
+                                </Button>
+                            {/if}
+                        </div>
+                    {/if}
+
+                    {#if history.requests && history.requests.length > 0}
+                        <div>
+                            <p class="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Solicitações</p>
+                            <ul class="divide-y rounded-md border">
+                                {#each history.requests as item (item.id)}
+                                    <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                                        <Link href={showRequest(item.id).url} class="hover:underline">{item.date} · {item.origin}</Link>
+                                        <span class="text-xs text-muted-foreground">{item.status_label}</span>
+                                    </li>
+                                {/each}
+                            </ul>
+                        </div>
+                    {/if}
+
+                    {#if history.attendances === null}
+                        <p class="text-sm text-muted-foreground">Você não tem acesso ao histórico de atendimentos.</p>
+                    {:else if history.attendances.length === 0}
+                        <p class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">Nenhum atendimento ainda.</p>
+                    {:else}
+                        <div>
+                            <p class="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Atendimentos</p>
+                            <ol class="relative space-y-3 border-l pl-5">
+                                {#each history.attendances as attendance (attendance.id)}
+                                    <li class="relative">
+                                        <span class="absolute top-1.5 -left-[25px] size-2.5 rounded-full bg-primary"></span>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <Link href={showAttendance(attendance.id).url} class="text-sm font-medium hover:underline">
+                                                {attendance.date} às {attendance.time}
+                                            </Link>
+                                            <span class={cn('rounded-full px-2 py-0.5 text-xs', attendanceChipClass(attendance))}>{attendanceLabel(attendance)}</span>
+                                            <span class={cn('rounded-full px-2 py-0.5 text-xs', attendanceStatusClass(attendance.status))}>{attendance.status_label}</span>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground">{attendance.professional} · {attendance.modality_label}</p>
+                                    </li>
+                                {/each}
+                            </ol>
+                        </div>
+                    {/if}
                 </CardContent>
             </Card>
         </div>

@@ -13,7 +13,8 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $atendimentos = ['attendances.view', 'attendances.create', 'attendances.edit', 'attendances.delete', 'attendances.finish'];
+        $atendimentos = ['attendances.schedule', 'attendances.view', 'attendances.create', 'attendances.edit', 'attendances.delete', 'attendances.finish'];
+        $triagem = ['triage.view', 'triage.create', 'triage.perform'];
         $encaminhamentos = ['referrals.view', 'referrals.create', 'referrals.edit', 'referrals.delete'];
 
         $mapa = [
@@ -28,6 +29,7 @@ class RolePermissionSeeder extends Seeder
             // Acompanhamento institucional: consulta e relatórios.
             'coordinator' => [
                 'students.view', 'attendances.view', 'referrals.view',
+                'triage.view', 'triage.create',
                 'reports.view', 'reports.export_pdf',
             ],
             // Porta de entrada do NAE: triagem e cadastro do estudante.
@@ -35,12 +37,13 @@ class RolePermissionSeeder extends Seeder
                 ['students.view', 'students.create', 'students.edit', 'students.delete', 'students.sensitive', 'reports.view'],
                 $atendimentos,
                 $encaminhamentos,
+                $triagem,
             ),
             // Recebem o estudante por encaminhamento interno.
             'psychologist' => array_merge(['students.view', 'students.sensitive'], $atendimentos, $encaminhamentos),
             'pedagogue' => array_merge(['students.view', 'students.sensitive'], $atendimentos, $encaminhamentos),
-            // Apoio administrativo: agenda.
-            'assistant' => ['students.view', 'attendances.view'],
+            // Apoio administrativo: registra solicitações recebidas e agenda (SRS §10.2).
+            'assistant' => ['students.view', 'attendances.view', 'attendances.schedule', 'triage.view', 'triage.create'],
         ];
 
         foreach ($mapa as $perfil => $permissoes) {

@@ -4,9 +4,6 @@ use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 $screens = [
-    '/triagem' => 'demo/Triage',
-    '/triagem/nova-solicitacao' => 'demo/NewRequest',
-    '/atendimentos/registrar' => 'demo/RegisterAttendance',
     '/encaminhamentos' => 'demo/Referrals',
     '/relatorios' => 'demo/Reports',
 ];

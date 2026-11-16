@@ -22,6 +22,7 @@
     import { toUrl } from '@/lib/utils';
     import { dashboard } from '@/routes';
     import { index as studentsIndex } from '@/routes/students';
+    import { index as triageIndex } from '@/routes/triage';
     import type { NavItem } from '@/types';
 
     let {
@@ -46,10 +47,10 @@
         // Telas de demonstração (protótipo navegável, dados fictícios).
         {
             title: 'Triagem e atendimentos',
-            href: '/triagem',
+            href: triageIndex(),
             icon: CalendarDays,
+            permission: 'attendances.view',
             badge: 'M4',
-            demo: true,
         },
         {
             title: 'Encaminhamentos',
