@@ -57,6 +57,7 @@
     import { create as createReferral, show as showReferral } from '@/routes/referrals';
     import { close as closeFollowUp } from '@/routes/students/follow-up';
     import type { AttendanceSummary, Option, ReferralSummary, StudentDisability, StudentDocument } from '@/types';
+    import { formatPhone } from '@/lib/masks';
 
     let {
         student,
@@ -272,7 +273,7 @@
                         )}
                         {@render field('Sexo', student.sex_label)}
                         {@render field('E-mail', student.email)}
-                        {@render field('Telefone', student.phone)}
+                        {@render field('Telefone', formatPhone(student.phone))}
                     </dl>
                 </CardContent>
             </Card>
@@ -285,7 +286,7 @@
                     {#if student.guardian_name}
                         <dl class="grid gap-4 sm:grid-cols-3">
                             {@render field('Nome', student.guardian_name)}
-                            {@render field('Telefone', student.guardian_phone)}
+                            {@render field('Telefone', formatPhone(student.guardian_phone))}
                             {@render field('Parentesco', student.guardian_relationship)}
                         </dl>
                     {:else}

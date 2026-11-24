@@ -8,6 +8,7 @@
     import { Button } from '@/components/ui/button';
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';
+    import { formatPhone, formatRegistration, maskInput } from '@/lib/masks';
     import type { SexOption, Student } from '@/types';
     import type { RouteFormDefinition } from '@/wayfinder';
 
@@ -68,11 +69,11 @@
 
     // Formata a matrícula enquanto digita: 24108965 -> 24.1.08965.
     function onRegistrationInput(event: Event & { currentTarget: HTMLInputElement }): void {
-        const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8);
-        const parts = [digits.slice(0, 2), digits.slice(2, 3), digits.slice(3)].filter(Boolean);
-        registration = parts.join('.');
+        registration = formatRegistration(event.currentTarget.value);
         event.currentTarget.value = registration;
     }
+
+    const onPhoneInput = maskInput(formatPhone);
     // svelte-ignore state_referenced_locally
     let needsAccessibility = $state(student?.needs_accessibility ? '1' : '0');
     // svelte-ignore state_referenced_locally
@@ -184,7 +185,7 @@
                                 class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                                 value={registration}
                                 oninput={onRegistrationInput}
-                                placeholder="24.1.08965"
+                                placeholder="00.0.00000"
                                 inputmode="numeric"
                                 autocomplete="off"
                                 maxlength={10}
@@ -247,7 +248,7 @@
                         </div>
                         <div class="grid gap-2">
                             <Label for="phone">Telefone / WhatsApp {@render required()}</Label>
-                            <Input id="phone" name="phone" type="tel" value={student?.phone ?? ''} placeholder="(99) 99999-9999" maxlength={20} />
+                            <Input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="off" value={formatPhone(student?.phone)} oninput={onPhoneInput} placeholder="(00) 00000-0000" maxlength={15} />
                             <InputError message={errors.phone} />
                         </div>
                         <div class="grid gap-2">
@@ -257,7 +258,7 @@
                         </div>
                         <div class="grid gap-2">
                             <Label for="guardian_phone">Telefone de emergência</Label>
-                            <Input id="guardian_phone" name="guardian_phone" type="tel" value={student?.guardian_phone ?? ''} placeholder="(99) 99999-9999" maxlength={20} />
+                            <Input id="guardian_phone" name="guardian_phone" type="tel" inputmode="numeric" autocomplete="off" value={formatPhone(student?.guardian_phone)} oninput={onPhoneInput} placeholder="(00) 00000-0000" maxlength={15} />
                             <InputError message={errors.guardian_phone} />
                         </div>
                         <div class="grid gap-2">

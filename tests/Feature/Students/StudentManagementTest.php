@@ -302,6 +302,14 @@ test('telefones são salvos só com dígitos e validados com DDD', function () {
     $this->actingAs($user)
         ->post(route('students.store'), validStudentData(['registration' => '24.1.00999', 'phone' => '9999-0000']))
         ->assertSessionHasErrors(['phone' => 'O campo telefone deve ter entre 10 e 11 dígitos (DDD + número).']);
+
+    $this->actingAs($user)
+        ->post(route('students.store'), validStudentData([
+            'registration' => '24.1.00998',
+            'phone' => '999999999999999',
+            'guardian_phone' => '(99) 99999-99999',
+        ]))
+        ->assertSessionHasErrors(['phone', 'guardian_phone']);
 });
 
 describe('matrícula e curso (formato oficial da UNIBALSAS)', function () {
@@ -326,7 +334,7 @@ describe('matrícula e curso (formato oficial da UNIBALSAS)', function () {
     test('recusa matrícula fora do formato', function () {
         $this->actingAs(userWithPermissions('students.create'))
             ->post(route('students.store'), validStudentData(['registration' => '2507865']))
-            ->assertSessionHasErrors(['registration' => 'Informe a matrícula no formato 24.1.08965 (ano, semestre e número).']);
+            ->assertSessionHasErrors(['registration' => 'Informe a matrícula no formato 00.0.00000 (ano, semestre e número).']);
     });
 
     test('a pesquisa encontra a matrícula com ou sem pontos', function () {
