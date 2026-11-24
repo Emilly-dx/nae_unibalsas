@@ -6,6 +6,7 @@ use App\Actions\Students\AttachStudentDocument;
 use App\Enums\AccessibilityResource;
 use App\Enums\FollowUp\FollowUpClosureReason;
 use App\Enums\FollowUp\FollowUpStatus;
+use App\Enums\Modality;
 use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Http\Controllers\Controller;
@@ -19,6 +20,7 @@ use App\Models\StudentDocument;
 use App\Models\SupportRequest;
 use App\Models\User;
 use App\Support\AttendancePresenter;
+use App\Support\Courses;
 use App\Support\ReferralPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -261,7 +263,8 @@ class StudentController extends Controller
             'sexOptions' => Sex::options(),
             'shiftOptions' => Shift::options(),
             'accessibilityOptions' => AccessibilityResource::options(),
-            'courses' => Student::withTrashed()->distinct()->orderBy('course')->pluck('course'),
+            'courses' => Courses::options(),
+            'modalities' => Modality::options(),
         ];
     }
 

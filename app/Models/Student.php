@@ -9,6 +9,7 @@ use App\Enums\Modality;
 use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Enums\Triage\RequestStatus;
+use App\Support\Registration;
 use Carbon\CarbonImmutable;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -181,9 +182,14 @@ class Student extends Model
             return;
         }
 
-        $query->where(function (Builder $query) use ($term) {
+        // A matrícula é encontrada com ou sem os pontos (24.1.08965 ou 24108965).
+        $digits = Registration::digits($term);
+
+        $query->where(function (Builder $query) use ($term, $digits) {
             $query->where('name', 'like', "%{$term}%")
-                ->orWhere('registration', 'like', "%{$term}%");
+                ->orWhere('registration', 'like', "%{$term}%")
+                ->when($digits !== '', fn (Builder $query) => $query
+                    ->orWhereRaw("replace(registration, '.', '') like ?", ["%{$digits}%"]));
         });
     }
 

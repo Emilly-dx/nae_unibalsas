@@ -8,6 +8,8 @@ use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Http\Requests\Concerns\HasPortugueseMessages;
 use App\Models\Student;
+use App\Support\Courses;
+use App\Support\Registration;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -38,12 +40,16 @@ abstract class StudentRequest extends FormRequest
             'birth_date' => ['required', 'date', 'before:today'],
             'sex' => ['nullable', Rule::enum(Sex::class)],
             'registration' => [
-                'required', 'string', 'max:30',
+                'required', 'string', 'regex:'.Registration::PATTERN,
                 // Inclui inativos: matrícula de estudante inativo deve ser reativada, não duplicada.
                 Rule::unique(Student::class, 'registration')
                     ->ignore($student instanceof Student ? $student->id : null),
             ],
-            'course' => ['required', 'string', 'max:255'],
+            // Lista oficial (config/nae.php); na edição, aceita também o curso atual.
+            'course' => ['required', 'string', Rule::in([
+                ...Courses::names(),
+                ...($student instanceof Student ? [$student->course] : []),
+            ])],
             'period' => ['required', 'integer', 'between:1,12'],
             'shift' => ['nullable', Rule::enum(Shift::class)],
             'modality' => ['required', Rule::enum(Modality::class)],
@@ -115,7 +121,7 @@ abstract class StudentRequest extends FormRequest
     {
         $this->merge([
             'registration' => is_string($this->input('registration'))
-                ? trim($this->input('registration'))
+                ? Registration::normalize($this->input('registration'))
                 : $this->input('registration'),
             'modality' => $this->input('modality') ?: 'presential',
             'needs_accessibility' => $this->boolean('needs_accessibility'),

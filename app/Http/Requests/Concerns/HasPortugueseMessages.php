@@ -29,6 +29,8 @@ trait HasPortugueseMessages
             'after' => 'O campo :attribute deve ser posterior a :date.',
             'in' => 'O valor selecionado para :attribute é inválido.',
             'regex' => 'O formato do campo :attribute é inválido.',
+            'registration.regex' => 'Informe a matrícula no formato 24.1.08965 (ano, semestre e número).',
+            'course.in' => 'Selecione um curso da lista.',
             'file' => 'Selecione um arquivo válido.',
             'mimes' => 'O arquivo deve ser do tipo: :values.',
             'document.max' => 'O arquivo não pode ter mais que :max KB.',

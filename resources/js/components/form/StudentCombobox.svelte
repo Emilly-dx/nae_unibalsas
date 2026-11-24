@@ -34,7 +34,8 @@
         const list = term
             ? students.filter(
                   (student) =>
-                      normalize(student.name).includes(term) || student.registration.includes(term),
+                      normalize(student.name).includes(term) ||
+                      student.registration.replace(/\D/g, '').includes(term.replace(/\D/g, '') || '\u0000'),
               )
             : students;
 

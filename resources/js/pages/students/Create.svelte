@@ -24,12 +24,14 @@
         shiftOptions,
         accessibilityOptions,
         courses,
+        modalities,
         canAttachDocument,
     }: {
         sexOptions: SexOption[];
         shiftOptions: Option[];
         accessibilityOptions: Option[];
-        courses: string[];
+        courses: (Option & { modality: string })[];
+        modalities: Option[];
         canAttachDocument: boolean;
     } = $props();
 </script>
@@ -44,6 +46,7 @@
         {shiftOptions}
         {accessibilityOptions}
         {courses}
+        {modalities}
         {canAttachDocument}
         submitLabel="Salvar cadastro"
     >

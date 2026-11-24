@@ -11,7 +11,7 @@ function validStudentData(array $overrides = []): array
 {
     return [
         'name' => 'Maria da Silva',
-        'registration' => '2026123456',
+        'registration' => '26.1.23456',
         'course' => 'Análise e Desenvolvimento de Sistemas',
         'period' => 3,
         'email' => 'maria@example.com',
@@ -75,8 +75,8 @@ describe('listagem e pesquisa (RF-015, RF-016)', function () {
     });
 
     test('pesquisa por nome ou matrícula', function () {
-        Student::factory()->create(['name' => 'Joana Lima', 'registration' => '111']);
-        Student::factory()->create(['name' => 'Pedro Alves', 'registration' => '222']);
+        Student::factory()->create(['name' => 'Joana Lima', 'registration' => '24.1.00111']);
+        Student::factory()->create(['name' => 'Pedro Alves', 'registration' => '24.2.00222']);
 
         $user = userWithPermissions('students.view');
 
@@ -140,7 +140,7 @@ describe('cadastro e edição (RF-013, RF-014)', function () {
     });
 
     test('não permite matrícula duplicada, inclusive de estudante inativo', function () {
-        Student::factory()->inactive()->create(['registration' => '2026123456']);
+        Student::factory()->inactive()->create(['registration' => '26.1.23456']);
 
         $this->actingAs(userWithPermissions('students.create'))
             ->post(route('students.store'), validStudentData())
@@ -148,7 +148,7 @@ describe('cadastro e edição (RF-013, RF-014)', function () {
     });
 
     test('edita um estudante mantendo a própria matrícula', function () {
-        $student = Student::factory()->create(['registration' => '2026123456']);
+        $student = Student::factory()->create(['registration' => '26.1.23456']);
 
         $this->actingAs(userWithPermissions('students.edit'))
             ->put(route('students.update', $student), validStudentData(['name' => 'Maria Souza']))
@@ -300,6 +300,65 @@ test('telefones são salvos só com dígitos e validados com DDD', function () {
     expect(Student::query()->sole()->phone)->toBe('99988887777');
 
     $this->actingAs($user)
-        ->post(route('students.store'), validStudentData(['registration' => '999', 'phone' => '9999-0000']))
+        ->post(route('students.store'), validStudentData(['registration' => '24.1.00999', 'phone' => '9999-0000']))
         ->assertSessionHasErrors(['phone' => 'O campo telefone deve ter entre 10 e 11 dígitos (DDD + número).']);
+});
+
+describe('matrícula e curso (formato oficial da UNIBALSAS)', function () {
+    test('aceita a matrícula com ou sem pontos e salva no formato oficial', function () {
+        $user = userWithPermissions('students.create');
+
+        $this->actingAs($user)
+            ->post(route('students.store'), validStudentData(['registration' => '24108965']))
+            ->assertSessionHasNoErrors();
+
+        expect(Student::query()->sole()->registration)->toBe('24.1.08965');
+    });
+
+    test('a mesma matrícula digitada sem pontos é reconhecida como duplicada', function () {
+        Student::factory()->create(['registration' => '24.1.08965']);
+
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData(['registration' => '24108965']))
+            ->assertSessionHasErrors(['registration' => 'Já existe um cadastro com esta matrícula.']);
+    });
+
+    test('recusa matrícula fora do formato', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData(['registration' => '2507865']))
+            ->assertSessionHasErrors(['registration' => 'Informe a matrícula no formato 24.1.08965 (ano, semestre e número).']);
+    });
+
+    test('a pesquisa encontra a matrícula com ou sem pontos', function () {
+        Student::factory()->create(['name' => 'Felipe', 'registration' => '25.1.09687']);
+        Student::factory()->create(['name' => 'Outra pessoa', 'registration' => '24.1.06598']);
+        $user = userWithPermissions('students.view');
+
+        foreach (['25.1.09687', '25109687', '09687'] as $term) {
+            $this->actingAs($user)->get(route('students.index', ['search' => $term]))
+                ->assertInertia(fn (Assert $page) => $page->has('students.data', 1)->where('students.data.0.name', 'Felipe'));
+        }
+    });
+
+    test('o curso precisa ser um dos cursos da UNIBALSAS', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData(['course' => 'Engenharia Espacial']))
+            ->assertSessionHasErrors(['course' => 'Selecione um curso da lista.']);
+    });
+
+    test('na edição, mantém um curso antigo que não está mais na lista', function () {
+        $student = Student::factory()->create(['course' => 'Pedagogia', 'registration' => '20.1.00001']);
+
+        $this->actingAs(userWithPermissions('students.edit'))
+            ->put(route('students.update', $student), validStudentData(['course' => 'Pedagogia', 'registration' => '20.1.00001']))
+            ->assertSessionHasNoErrors();
+    });
+
+    test('aceita a modalidade semipresencial', function () {
+        $this->actingAs(userWithPermissions('students.create'))
+            ->post(route('students.store'), validStudentData(['course' => 'Biomedicina', 'modality' => 'hybrid']))
+            ->assertSessionHasNoErrors();
+
+        expect(Student::query()->sole()->modality->label())->toBe('Semipresencial');
+    });
 });

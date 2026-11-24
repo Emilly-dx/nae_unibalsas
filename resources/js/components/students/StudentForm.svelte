@@ -12,6 +12,7 @@
     import type { RouteFormDefinition } from '@/wayfinder';
 
     type Option = { value: string; label: string };
+    type CourseOption = Option & { modality: string };
 
     let {
         action,
@@ -20,6 +21,7 @@
         shiftOptions,
         accessibilityOptions,
         courses = [],
+        modalities = [],
         student = null,
         canAttachDocument = false,
         submitLabel = 'Salvar',
@@ -30,7 +32,8 @@
         sexOptions: SexOption[];
         shiftOptions: Option[];
         accessibilityOptions: Option[];
-        courses?: string[];
+        courses?: CourseOption[];
+        modalities?: Option[];
         student?: Student | null;
         canAttachDocument?: boolean;
         submitLabel?: string;
@@ -39,6 +42,37 @@
 
     // svelte-ignore state_referenced_locally
     let modality = $state(student?.modality ?? 'presential');
+    // svelte-ignore state_referenced_locally
+    let course = $state(student?.course ?? '');
+    // svelte-ignore state_referenced_locally
+    let registration = $state(student?.registration ?? '');
+
+    const modalityGroups = $derived(
+        modalities
+            .map((group) => ({ ...group, courses: courses.filter((item) => item.modality === group.value) }))
+            .filter((group) => group.courses.length > 0),
+    );
+    // Curso antigo (fora da lista atual) continua selecionável na edição.
+    const legacyCourse = $derived(
+        student && student.course && !courses.some((item) => item.value === student.course) ? student.course : null,
+    );
+
+    // Ao escolher o curso, a modalidade dele já vem preenchida (pode ser trocada).
+    function onCourseChange(): void {
+        const selected = courses.find((item) => item.value === course);
+
+        if (selected) {
+            modality = selected.modality;
+        }
+    }
+
+    // Formata a matrícula enquanto digita: 24108965 -> 24.1.08965.
+    function onRegistrationInput(event: Event & { currentTarget: HTMLInputElement }): void {
+        const digits = event.currentTarget.value.replace(/\D/g, '').slice(0, 8);
+        const parts = [digits.slice(0, 2), digits.slice(2, 3), digits.slice(3)].filter(Boolean);
+        registration = parts.join('.');
+        event.currentTarget.value = registration;
+    }
     // svelte-ignore state_referenced_locally
     let needsAccessibility = $state(student?.needs_accessibility ? '1' : '0');
     // svelte-ignore state_referenced_locally
@@ -144,15 +178,33 @@
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="registration">Matrícula {@render required()}</Label>
-                            <Input id="registration" name="registration" value={student?.registration ?? ''} placeholder="000000" maxlength={30} />
+                            <input
+                                id="registration"
+                                name="registration"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                                value={registration}
+                                oninput={onRegistrationInput}
+                                placeholder="24.1.08965"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                maxlength={10}
+                            />
+                            <p class="text-xs text-muted-foreground">Ano, semestre e número, como no portal do aluno.</p>
                             <InputError message={errors.registration} />
                         </div>
                         <div class="grid gap-2">
                             <Label for="course">Curso {@render required()}</Label>
-                            <Input id="course" name="course" list="course-options" value={student?.course ?? ''} placeholder="Selecione ou digite o curso" maxlength={255} />
-                            <datalist id="course-options">
-                                {#each courses as course (course)}<option value={course}></option>{/each}
-                            </datalist>
+                            <FieldSelect id="course" name="course" autocomplete="off" bind:value={course} onchange={onCourseChange}>
+                                <option value="">Selecione o curso</option>
+                                {#each modalityGroups as group (group.value)}
+                                    <optgroup label={group.label}>
+                                        {#each group.courses as item (item.value)}<option value={item.value}>{item.label}</option>{/each}
+                                    </optgroup>
+                                {/each}
+                                {#if legacyCourse}
+                                    <optgroup label="Fora da oferta atual"><option value={legacyCourse}>{legacyCourse}</option></optgroup>
+                                {/if}
+                            </FieldSelect>
                             <InputError message={errors.course} />
                         </div>
                         <div class="grid gap-2">
@@ -176,9 +228,9 @@
                         <div class="grid gap-2 md:col-span-2">
                             <span class="text-sm font-medium">Modalidade</span>
                             <Segmented
-                                class="md:w-1/2"
+                                class="md:w-2/3"
                                 name="modality"
-                                options={[{ value: 'presential', label: 'Presencial' }, { value: 'distance', label: 'EAD' }]}
+                                options={modalities}
                                 bind:value={modality}
                             />
                         </div>
