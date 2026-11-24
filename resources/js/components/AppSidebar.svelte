@@ -24,6 +24,8 @@
     import { index as studentsIndex } from '@/routes/students';
     import { index as triageIndex } from '@/routes/triage';
     import { index as referralsIndex } from '@/routes/referrals';
+    import { index as agendaIndex } from '@/routes/agenda';
+    import CalendarClock from '@lucide/svelte/icons/calendar-clock';
     import type { NavItem } from '@/types';
 
     let {
@@ -52,6 +54,13 @@
             icon: CalendarDays,
             permission: 'attendances.view',
             badge: 'M4',
+        },
+        {
+            title: 'Agenda',
+            href: agendaIndex(),
+            icon: CalendarClock,
+            permission: 'attendances.view',
+            badge: 'M7',
         },
         {
             title: 'Encaminhamentos',

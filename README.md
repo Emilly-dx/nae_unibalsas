@@ -12,8 +12,8 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 | M4  | Triagem + Atendimentos                                  | Concluído |
 | M5  | Acompanhamento + Histórico                              | Concluído |
 | M6  | Encaminhamentos                                         | Concluído |
-| M7  | Agenda                                                  | Próximo   |
-| M8  | Relatórios + Indicadores                                | Pendente  |
+| M7  | Agenda                                                  | Concluído |
+| M8  | Relatórios + Indicadores                                | Próximo   |
 | M9  | Segurança + Auditoria + LGPD                            | Pendente  |
 | M10 | Validação + Usabilidade (SUS)                           | Pendente  |
 
@@ -26,7 +26,7 @@ NAE. Nessas telas nada é salvo no banco. Para escondê-las:
 
 O que já funciona de verdade: login, perfis e permissões (M1), interface (M2),
 cadastro de estudantes (M3), triagem + atendimentos (M4), acompanhamento
-(M5) e encaminhamentos (M6).
+(M5), encaminhamentos (M6) e agenda (M7).
 
 ### Dados de demonstração
 
@@ -81,6 +81,11 @@ cada perfil (senha `password`): `psicopedagoga@nae.test`,
   partir de um atendimento muda o status dele para "Encaminhado". Motivo e
   retorno são criptografados e visíveis só para quem encaminhou e para o
   profissional de destino, sem exceção para o administrador (RN-012).
+- **M7 — Agenda:** tela própria com a semana (segunda a sexta, e sábado
+  quando houver atendimento), filtro por profissional ("Minha agenda" por
+  padrão para profissionais), lista dos próximos 14 dias agrupada por dia e
+  remarcação de agendamentos (data, horário, duração, profissional, tipo e
+  modalidade), com bloqueio de conflito de horário e registro na auditoria.
 
 ## Stack
 

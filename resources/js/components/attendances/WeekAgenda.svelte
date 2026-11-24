@@ -8,7 +8,15 @@
     import { index as triageIndex } from '@/routes/triage';
     import type { Week } from '@/types';
 
-    let { week }: { week: Week } = $props();
+    let {
+        week,
+        hrefFor = (date: string): string => triageIndex({ query: { aba: 'agenda', semana: date } }).url,
+        showProfessional = true,
+    }: {
+        week: Week;
+        hrefFor?: (date: string) => string;
+        showProfessional?: boolean;
+    } = $props();
 
     const HOUR = 56;
 
@@ -22,8 +30,7 @@
         return Array.from({ length: last - first }, (_, index) => first + index);
     });
 
-    const weekHref = (date: string): string =>
-        triageIndex({ query: { aba: 'agenda', semana: date } }).url;
+    const weekHref = (date: string): string => hrefFor(date);
 </script>
 
 <section class="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card">
@@ -51,14 +58,14 @@
     </header>
 
     <div class="overflow-x-auto">
-        <div class="min-w-[640px]">
-            <div class="grid grid-cols-[56px_repeat(5,1fr)] border-b text-sm">
+        <div class="min-w-[640px]" style:--days={week.days.length}>
+            <div class="grid grid-cols-[56px_repeat(var(--days),1fr)] border-b text-sm">
                 <div></div>
                 {#each week.days as day (day.label)}
                     <div class={cn('border-l px-3 py-2 font-medium', day.isToday && 'text-primary')}>{day.label}</div>
                 {/each}
             </div>
-            <div class="grid grid-cols-[56px_repeat(5,1fr)]">
+            <div class="grid grid-cols-[56px_repeat(var(--days),1fr)]">
                 <div>
                     {#each hours as hour (hour)}
                         <div class="pr-2 text-right font-mono text-xs text-muted-foreground" style:height="{HOUR}px">
@@ -83,7 +90,9 @@
                                 title="{event.time} · {event.student.name} · {attendanceLabel(event)} · {event.professional} · {event.status_label}"
                             >
                                 <p class="truncate font-semibold">{event.time} {event.student.name}</p>
-                                <p class="truncate opacity-80">{attendanceLabel(event)}</p>
+                                <p class="truncate opacity-80">
+                                    {attendanceLabel(event)}{showProfessional ? ` · ${event.professional}` : ''}
+                                </p>
                             </Link>
                         {/each}
                     </div>

@@ -7,8 +7,7 @@ use App\Models\Attendance;
 use App\Models\SupportRequest;
 use App\Models\User;
 use App\Support\AttendancePresenter;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use App\Support\WeekAgenda;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,7 +43,7 @@ class TriageController extends Controller
                         'date' => $item->created_at?->format('d/m'),
                     ])
                 : [],
-            'week' => $canAttendances ? $this->week($request) : null,
+            'week' => $canAttendances ? WeekAgenda::build($request->string('semana')->toString()) : null,
             'registered' => $canAttendances
                 ? Attendance::query()->registered()->with(['student', 'professional'])
                     ->latest('scheduled_at')->paginate(15, ['*'], 'pagina')->withQueryString()
@@ -58,44 +57,5 @@ class TriageController extends Controller
                 'attendances' => $canAttendances,
             ],
         ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function week(Request $request): array
-    {
-        $reference = rescue(
-            fn () => CarbonImmutable::createFromFormat('Y-m-d', $request->string('semana')->toString()),
-            null,
-            false,
-        );
-        $monday = ($reference instanceof CarbonImmutable ? $reference : CarbonImmutable::today())->startOfWeek(CarbonInterface::MONDAY)->startOfDay();
-        $saturday = $monday->addDays(5);
-
-        $events = Attendance::query()->notCancelled()->between($monday, $saturday)
-            ->with(['student', 'professional'])->orderBy('scheduled_at')->get();
-
-        return [
-            'label' => $monday->format('d/m').' – '.$saturday->subDay()->format('d/m/Y'),
-            'previous' => $monday->subWeek()->toDateString(),
-            'next' => $monday->addWeek()->toDateString(),
-            'current' => CarbonImmutable::today()->startOfWeek(CarbonInterface::MONDAY)->toDateString(),
-            'isCurrent' => $monday->isSameDay(CarbonImmutable::today()->startOfWeek(CarbonInterface::MONDAY)),
-            'days' => collect(range(0, 4))->map(function (int $offset) use ($monday): array {
-                $day = $monday->addDays($offset);
-
-                return [
-                    'label' => ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'][$offset].' '.$day->format('d'),
-                    'isToday' => $day->isToday(),
-                ];
-            })->all(),
-            'events' => $events->map(fn (Attendance $attendance): array => [
-                ...AttendancePresenter::summary($attendance),
-                'day' => $attendance->scheduled_at->dayOfWeekIso - 1,
-                'start' => $attendance->scheduled_at->hour + $attendance->scheduled_at->minute / 60,
-                'hours' => max($attendance->planned_minutes, 30) / 60,
-            ])->values()->all(),
-        ];
     }
 }

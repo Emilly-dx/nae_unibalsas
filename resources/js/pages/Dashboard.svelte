@@ -28,7 +28,7 @@
     import { show as showAttendance } from '@/routes/attendances';
     import { create as registerAttendance, edit as registerScheduled } from '@/routes/attendances/register';
     import { create as createStudent } from '@/routes/students';
-    import { index as triageIndex } from '@/routes/triage';
+    import { index as agendaIndex } from '@/routes/agenda';
     import { create as createRequest } from '@/routes/triage/requests';
     import { create as createReferral } from '@/routes/referrals';
     import type { AttendanceSummary } from '@/types';
@@ -133,7 +133,7 @@
             <section class="overflow-hidden rounded-xl border bg-card">
                 <header class="flex items-center justify-between border-b px-5 py-4">
                     <h2 class="font-semibold">Agenda de hoje</h2>
-                    <Link href={triageIndex({ query: { aba: 'agenda' } }).url} class="text-sm text-primary underline-offset-4 hover:underline">
+                    <Link href={agendaIndex().url} class="text-sm text-primary underline-offset-4 hover:underline">
                         Ver agenda da semana
                     </Link>
                 </header>

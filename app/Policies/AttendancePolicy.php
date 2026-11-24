@@ -41,6 +41,14 @@ class AttendancePolicy
     }
 
     /**
+     * Remarcar um agendamento (RF-043): o profissional responsável ou quem agenda.
+     */
+    public function reschedule(User $user, Attendance $attendance): bool
+    {
+        return $this->cancel($user, $attendance);
+    }
+
+    /**
      * Concluir um atendimento registrado (RF-029).
      */
     public function finish(User $user, Attendance $attendance): bool

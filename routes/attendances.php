@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Agenda\AgendaController;
 use App\Http\Controllers\Attendances\AttendanceController;
 use App\Http\Controllers\Triage\SupportRequestController;
 use App\Http\Controllers\Triage\TriageController;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 */
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('triagem', [TriageController::class, 'index'])->name('triage.index');
+
+    // M7 — Agenda (SRS §13).
+    Route::get('agenda', [AgendaController::class, 'index'])
+        ->middleware('permission:attendances.view')->name('agenda.index');
 
     Route::prefix('triagem/solicitacoes')->name('triage.requests.')->group(function () {
         Route::get('nova', [SupportRequestController::class, 'create'])
@@ -43,6 +48,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->middleware('permission:attendances.create')->name('register.edit');
             Route::put('{attendance}/registro', [AttendanceController::class, 'updateRegistration'])
                 ->middleware('permission:attendances.create')->name('register.update');
+            Route::get('{attendance}/remarcar', [AttendanceController::class, 'edit'])
+                ->middleware('permission:attendances.view')->name('edit');
+            Route::put('{attendance}', [AttendanceController::class, 'update'])
+                ->middleware('permission:attendances.view')->name('update');
             Route::patch('{attendance}/cancelar', [AttendanceController::class, 'cancel'])->name('cancel');
             Route::patch('{attendance}/concluir', [AttendanceController::class, 'finish'])->name('finish');
         });

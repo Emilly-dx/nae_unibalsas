@@ -8,6 +8,7 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\Attendance\AttendanceType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Attendances\RegisterAttendanceRequest;
+use App\Http\Requests\Attendances\RescheduleAttendanceRequest;
 use App\Http\Requests\Attendances\ScheduleAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\Student;
@@ -80,6 +81,7 @@ class AttendanceController extends Controller
             'can' => [
                 'register' => Gate::allows('register', $attendance),
                 'cancel' => Gate::allows('cancel', $attendance),
+                'reschedule' => Gate::allows('reschedule', $attendance),
                 'finish' => Gate::allows('finish', $attendance),
                 'viewContent' => $canViewContent,
                 'viewStudent' => $user->can('students.view'),
@@ -161,6 +163,37 @@ class AttendanceController extends Controller
         if ($request->boolean('refer_after') && $request->user()?->can('referrals.create')) {
             return to_route('referrals.create', ['atendimento' => $attendance->id]);
         }
+
+        return to_route('attendances.show', $attendance);
+    }
+
+    /**
+     * Formulário de remarcação (RF-043).
+     */
+    public function edit(Attendance $attendance): Response
+    {
+        Gate::authorize('reschedule', $attendance);
+        $attendance->load(['student', 'professional']);
+
+        return Inertia::render('attendances/Reschedule', [
+            'attendance' => [
+                ...AttendancePresenter::summary($attendance),
+                'date_value' => $attendance->scheduled_at->toDateString(),
+                'modality' => $attendance->modality->value,
+            ],
+            'professionals' => Professionals::options(),
+            'types' => AttendanceType::options(),
+            'modalities' => AttendanceModality::options(),
+        ]);
+    }
+
+    public function update(RescheduleAttendanceRequest $request, Attendance $attendance, ScheduleAttendance $schedule): RedirectResponse
+    {
+        Gate::authorize('reschedule', $attendance);
+
+        $schedule->reschedule($attendance, $request->integer('professional_id'), $request->slot());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Agendamento remarcado.']);
 
         return to_route('attendances.show', $attendance);
     }

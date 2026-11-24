@@ -1,12 +1,12 @@
 <script module lang="ts">
     import { dashboard } from '@/routes';
     import { show } from '@/routes/attendances';
-    import { index } from '@/routes/triage';
+    import { index as agendaIndex } from '@/routes/agenda';
 
     export const layout = (props: { attendance: { id: number; student: { name: string } } }) => ({
         breadcrumbs: [
             { title: 'Painel', href: dashboard() },
-            { title: 'Triagem e atendimentos', href: index({ query: { aba: 'agenda' } }) },
+            { title: 'Agenda', href: agendaIndex() },
             { title: props.attendance.student.name, href: show(props.attendance.id) },
         ],
     });
@@ -32,7 +32,7 @@
     import { Label } from '@/components/ui/label';
     import { attendanceChipClass, attendanceLabel, attendanceStatusClass } from '@/lib/attendances';
     import { cn } from '@/lib/utils';
-    import { cancel, finish } from '@/routes/attendances';
+    import { cancel, edit as reschedule, finish } from '@/routes/attendances';
     import { edit as registerForm } from '@/routes/attendances/register';
     import { create as createReferral } from '@/routes/referrals';
     import Route from '@lucide/svelte/icons/route';
@@ -55,7 +55,7 @@
     }: {
         attendance: Attendance;
         content: { demand: string | null; conduct: string | null; agreements: string | null; next_return_on: string | null } | null;
-        can: { register: boolean; cancel: boolean; finish: boolean; viewContent: boolean; viewStudent: boolean; viewRequest: boolean; refer: boolean };
+        can: { register: boolean; cancel: boolean; reschedule: boolean; finish: boolean; viewContent: boolean; viewStudent: boolean; viewRequest: boolean; refer: boolean };
     } = $props();
 
     let cancelOpen = $state(false);
@@ -91,6 +91,11 @@
             </p>
         </div>
         <div class="flex flex-wrap gap-2">
+            {#if can.reschedule}
+                <Button variant="outline" asChild>
+                    {#snippet children(props)}<Link {...props} href={reschedule(attendance.id).url}>Remarcar</Link>{/snippet}
+                </Button>
+            {/if}
             {#if can.cancel}
                 <Dialog bind:open={cancelOpen}>
                     <DialogTrigger><Button variant="outline">Cancelar agendamento</Button></DialogTrigger>

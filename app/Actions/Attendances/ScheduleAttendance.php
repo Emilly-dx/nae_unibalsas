@@ -58,12 +58,45 @@ class ScheduleAttendance
         return $attendance;
     }
 
-    private function ensureProfessionalIsFree(int $professionalId, CarbonImmutable $start, int $minutes): void
+    /**
+     * Remarca um agendamento (RF-043): data, horário, duração, profissional,
+     * tipo e modalidade, mantendo o bloqueio de conflito de horário.
+     *
+     * @param  array{date: string, time: string, planned_minutes: int, type: string, modality: string}  $data
+     */
+    public function reschedule(Attendance $attendance, int $professionalId, array $data): Attendance
+    {
+        $start = CarbonImmutable::createFromFormat('Y-m-d H:i', "{$data['date']} {$data['time']}");
+
+        if (! $start instanceof CarbonImmutable) {
+            throw ValidationException::withMessages(['time' => 'Data ou horário inválidos.']);
+        }
+
+        if ($start->isPast()) {
+            throw ValidationException::withMessages(['time' => 'O novo horário já passou.']);
+        }
+
+        $this->ensureProfessionalIsFree($professionalId, $start, $data['planned_minutes'], $attendance->id);
+
+        $attendance->fill([
+            'type' => AttendanceType::from($data['type']),
+            'modality' => AttendanceModality::from($data['modality']),
+            'scheduled_at' => $start,
+            'planned_minutes' => $data['planned_minutes'],
+        ]);
+        $attendance->professional_id = $professionalId;
+        $attendance->save();
+
+        return $attendance;
+    }
+
+    private function ensureProfessionalIsFree(int $professionalId, CarbonImmutable $start, int $minutes, ?int $ignoreId = null): void
     {
         $end = $start->addMinutes($minutes);
 
         $conflict = Attendance::query()
             ->where('professional_id', $professionalId)
+            ->when($ignoreId !== null, fn ($query) => $query->whereKeyNot($ignoreId))
             ->where('status', AttendanceStatus::Scheduled)
             ->where('scheduled_at', '<', $end)
             ->where('scheduled_at', '>', $start->subHours(4))
