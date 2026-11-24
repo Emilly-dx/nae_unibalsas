@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+    import { index as reportsIndex } from '@/routes/reports';
     import { Link, page } from '@inertiajs/svelte';
     import CalendarDays from '@lucide/svelte/icons/calendar-days';
     import ChartColumn from '@lucide/svelte/icons/chart-column';
@@ -51,7 +52,6 @@
     };
 
     const auth = $derived(page.props.auth);
-    const demo = $derived(page.props.demoScreens);
     const firstName = $derived(auth.user.name.split(' ')[0]);
     const isAdmin = $derived(auth.roles.includes('administrator'));
     const profile = $derived(
@@ -79,7 +79,7 @@
             { title: 'Nova solicitação', href: createRequest().url, icon: Inbox, show: can(auth, 'triage.create') },
             { title: 'Registrar atendimento', href: registerAttendance().url, icon: FileText, show: can(auth, 'attendances.create') },
             { title: 'Novo encaminhamento', href: createReferral().url, icon: Route, show: can(auth, 'referrals.create') },
-            { title: 'Relatórios', href: '/relatorios', icon: ChartColumn, show: demo },
+            { title: 'Relatórios', href: reportsIndex().url, icon: ChartColumn, show: can(auth, 'reports.view') },
         ].filter((shortcut) => shortcut.show),
     );
 </script>

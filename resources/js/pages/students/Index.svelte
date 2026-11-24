@@ -13,11 +13,9 @@
     import { Link, page, router } from '@inertiajs/svelte';
     import ChevronLeft from '@lucide/svelte/icons/chevron-left';
     import ChevronRight from '@lucide/svelte/icons/chevron-right';
-    import Download from '@lucide/svelte/icons/download';
     import Plus from '@lucide/svelte/icons/plus';
     import Search from '@lucide/svelte/icons/search';
     import Users from '@lucide/svelte/icons/users';
-    import { toast } from 'svelte-sonner';
     import AppHead from '@/components/AppHead.svelte';
     import Heading from '@/components/Heading.svelte';
     import { Badge } from '@/components/ui/badge';
@@ -120,10 +118,6 @@
         />
 
         <div class="flex flex-wrap gap-2">
-        <Button variant="outline" onclick={() => toast.info('A exportação será implementada no módulo de relatórios (M8).')}>
-            <Download class="size-4" />
-            Exportar
-        </Button>
         {#if canCreate}
             <Button asChild>
                 {#snippet children(props)}

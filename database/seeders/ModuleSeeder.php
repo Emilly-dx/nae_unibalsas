@@ -21,6 +21,7 @@ class ModuleSeeder extends Seeder
             ['slug' => 'attendances', 'name' => 'Atendimentos'],
             ['slug' => 'referrals', 'name' => 'Encaminhamentos'],
             ['slug' => 'reports', 'name' => 'Relatórios'],
+            ['slug' => 'audit', 'name' => 'Auditoria'],
         ];
 
         foreach ($modules as $module) {

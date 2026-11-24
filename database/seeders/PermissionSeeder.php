@@ -61,6 +61,10 @@ class PermissionSeeder extends Seeder
             'reports' => [
                 'reports.view' => 'Visualizar relatórios',
                 'reports.export_pdf' => 'Exportar relatórios em PDF',
+                'reports.export_spreadsheet' => 'Exportar relatórios em planilha (Excel)',
+            ],
+            'audit' => [
+                'audit.view' => 'Consultar a trilha de auditoria',
             ],
         ];
 

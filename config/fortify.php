@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Sem cadastro público: as contas são criadas pela administração (M9).
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

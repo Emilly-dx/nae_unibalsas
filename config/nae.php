@@ -3,12 +3,6 @@
 return [
 
     /*
-    | Telas de demonstração (protótipo navegável com dados fictícios) dos
-    | módulos ainda não implementados. Desligar em produção.
-    */
-    'demo_screens' => (bool) env('NAE_DEMO_SCREENS', true),
-
-    /*
     | Cursos de graduação da UNIBALSAS e a modalidade de cada um
     | (presential, hybrid = semipresencial, distance = EAD).
     | Fonte: Vestibular UNIBALSAS 2027.1 e cursos EAD. Para incluir um curso

@@ -24,13 +24,14 @@ class RolePermissionSeeder extends Seeder
                 'acl.assign_roles', 'acl.manage_permissions',
                 'profiles.view', 'profiles.create', 'profiles.edit', 'profiles.delete',
                 'profiles.export_pdf', 'profiles.view_public',
-                'students.view', 'reports.view', 'reports.export_pdf',
+                'students.view', 'reports.view', 'reports.export_pdf', 'reports.export_spreadsheet',
+                'audit.view',
             ],
             // Acompanhamento institucional: consulta e relatórios.
             'coordinator' => [
                 'students.view', 'attendances.view', 'referrals.view',
                 'triage.view', 'triage.create',
-                'reports.view', 'reports.export_pdf',
+                'reports.view', 'reports.export_pdf', 'reports.export_spreadsheet',
             ],
             // Porta de entrada do NAE: triagem e cadastro do estudante.
             'psychopedagogue' => array_merge(

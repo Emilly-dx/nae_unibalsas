@@ -4,7 +4,7 @@
     export const layout = {
         breadcrumbs: [
             {
-                title: 'Profile settings',
+                title: 'Perfil',
                 href: edit(),
             },
         ],
@@ -15,7 +15,6 @@
     import { Form, page } from '@inertiajs/svelte';
     import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
     import AppHead from '@/components/AppHead.svelte';
-    import DeleteUser from '@/components/DeleteUser.svelte';
     import Heading from '@/components/Heading.svelte';
     import InputError from '@/components/InputError.svelte';
     import TextLink from '@/components/TextLink.svelte';
@@ -27,15 +26,15 @@
     const user = $derived(page.props.auth.user);
 </script>
 
-<AppHead title="Profile settings" />
+<AppHead title="Perfil" />
 
-<h1 class="sr-only">Profile settings</h1>
+<h1 class="sr-only">Perfil</h1>
 
 <div class="flex flex-col space-y-6">
     <Heading
         variant="small"
-        title="Profile"
-        description="Update your name and email address"
+        title="Perfil"
+        description="Atualize seu nome e e-mail"
     />
 
     <Form
@@ -45,7 +44,7 @@
     >
         {#snippet children({ errors, processing })}
             <div class="grid gap-2">
-                <Label for="name">Name</Label>
+                <Label for="name">Nome</Label>
                 <Input
                     id="name"
                     name="name"
@@ -53,13 +52,13 @@
                     value={user.name}
                     required
                     autocomplete="name"
-                    placeholder="Full name"
+                    placeholder="Nome completo"
                 />
                 <InputError class="mt-2" message={errors.name} />
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">E-mail</Label>
                 <Input
                     id="email"
                     type="email"
@@ -68,7 +67,7 @@
                     value={user.email}
                     required
                     autocomplete="username"
-                    placeholder="Email address"
+                    placeholder="E-mail"
                 />
                 <InputError class="mt-2" message={errors.email} />
             </div>
@@ -95,11 +94,10 @@
                 <Button
                     type="submit"
                     disabled={processing}
-                    data-test="update-profile-button">Save</Button
+                    data-test="update-profile-button">Salvar</Button
                 >
             </div>
         {/snippet}
     </Form>
 </div>
 
-<DeleteUser />

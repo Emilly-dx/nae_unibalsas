@@ -1,7 +1,7 @@
 <script module lang="ts">
     export const layout = {
-        title: 'Log in to your account',
-        description: 'Enter your email and password below to log in',
+        title: 'Entrar na plataforma',
+        description: 'Use o e-mail e a senha da sua conta do NAE',
     };
 </script>
 
@@ -16,7 +16,6 @@
     import { Input } from '@/components/ui/input';
     import { Label } from '@/components/ui/label';
     import { Spinner } from '@/components/ui/spinner';
-    import { register } from '@/routes';
     import { store } from '@/routes/login';
     import { request } from '@/routes/password';
     import PasskeyVerify from '@/components/PasskeyVerify.svelte';
@@ -30,7 +29,7 @@
     } = $props();
 </script>
 
-<AppHead title="Log in" />
+<AppHead title="Entrar" />
 
 {#if status}
     <div class="mb-4 text-center text-sm font-medium text-green-600">
@@ -48,24 +47,24 @@
     {#snippet children({ errors, processing })}
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">E-mail</Label>
                 <Input
                     id="email"
                     type="email"
                     name="email"
                     required
                     autocomplete="email"
-                    placeholder="email@example.com"
+                    placeholder="nome@unibalsas.edu.br"
                 />
                 <InputError message={errors.email} />
             </div>
 
             <div class="grid gap-2">
                 <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Senha</Label>
                     {#if canResetPassword}
                         <TextLink href={request()} class="text-sm">
-                            Forgot your password?
+                            Esqueceu a senha?
                         </TextLink>
                     {/if}
                 </div>
@@ -74,7 +73,7 @@
                     name="password"
                     required
                     autocomplete="current-password"
-                    placeholder="Password"
+                    placeholder="Sua senha"
                 />
                 <InputError message={errors.password} />
             </div>
@@ -82,7 +81,7 @@
             <div class="flex items-center justify-between">
                 <Label for="remember" class="flex items-center space-x-3">
                     <Checkbox id="remember" name="remember" />
-                    <span>Remember me</span>
+                    <span>Manter conectado</span>
                 </Label>
             </div>
 
@@ -93,13 +92,12 @@
                 data-test="login-button"
             >
                 {#if processing}<Spinner />{/if}
-                Log in
+                Entrar
             </Button>
         </div>
 
-        <div class="text-center text-sm text-muted-foreground">
-            Don't have an account?
-            <TextLink href={register()}>Sign up</TextLink>
-        </div>
+        <p class="text-center text-sm text-muted-foreground">
+            Não tem conta? Peça o acesso à coordenação do NAE.
+        </p>
     {/snippet}
 </Form>

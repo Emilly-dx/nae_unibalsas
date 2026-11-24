@@ -22,7 +22,6 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
-            demoScreens: boolean;
             [key: string]: unknown;
         };
     }

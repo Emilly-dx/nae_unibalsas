@@ -13,20 +13,22 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 | M5  | Acompanhamento + Histórico                              | Concluído |
 | M6  | Encaminhamentos                                         | Concluído |
 | M7  | Agenda                                                  | Concluído |
-| M8  | Relatórios + Indicadores                                | Próximo   |
-| M9  | Segurança + Auditoria + LGPD                            | Pendente  |
-| M10 | Validação + Usabilidade (SUS)                           | Pendente  |
+| M8  | Relatórios + Indicadores                                | Concluído |
+| M9  | Segurança + Auditoria + LGPD                            | Concluído |
+| M10 | Validação + Usabilidade (SUS)                           | Próximo   |
 
-## Protótipo navegável (M8)
+## Situação atual
 
-A tela de **Relatórios** está disponível como
-**protótipo navegável**, com dados fictícios, para validação com a equipe do
-NAE. Nessas telas nada é salvo no banco. Para escondê-las:
-`NAE_DEMO_SCREENS=false` no `.env`.
+Todos os módulos do SRS (M1 a M9) funcionam com dados reais. O próximo passo
+é a validação com a equipe do NAE e a avaliação de usabilidade (M10).
 
-O que já funciona de verdade: login, perfis e permissões (M1), interface (M2),
-cadastro de estudantes (M3), triagem + atendimentos (M4), acompanhamento
-(M5), encaminhamentos (M6) e agenda (M7).
+Depois de atualizar o projeto, rode as migrations e atualize permissões e
+perfis (o comando só acrescenta o que falta):
+
+```bash
+php artisan migrate
+php artisan db:seed --class=AccessControlSeeder
+```
 
 ### Dados de demonstração
 
@@ -86,6 +88,22 @@ cada perfil (senha `password`): `psicopedagoga@nae.test`,
   padrão para profissionais), lista dos próximos 14 dias agrupada por dia e
   remarcação de agendamentos (data, horário, duração, profissional, tipo e
   modalidade), com bloqueio de conflito de horário e registro na auditoria.
+- **M8 — Relatórios + Indicadores:** estudantes atendidos, atendimentos
+  realizados/agendados/cancelados, novos acompanhamentos e encerramentos,
+  encaminhamentos internos/externos, evolução mensal por tipo, por
+  profissional, por curso, distribuição das demandas e origem das
+  solicitações. Filtros por período, tipo, profissional, curso e modalidade.
+  Exportação em PDF (versão para impressão) e Excel (CSV), cada uma com sua
+  permissão e registrada na auditoria. Só números agregados: nenhum nome de
+  estudante nem conteúdo sigiloso.
+- **M9 — Segurança + Auditoria + LGPD:** gestão de contas da equipe (criar,
+  editar, perfis, desativar/reativar, link de nova senha), sem cadastro
+  público e sem exclusão de contas (RN-013); matriz de permissões por perfil;
+  trilha de auditoria com filtros (quem, o quê, quando, quais campos — nunca
+  os valores); registro de entradas, saídas, senhas erradas e bloqueios;
+  contas desativadas perdem o acesso na hora; cabeçalhos de segurança e
+  páginas autenticadas fora do cache do navegador; telas de login e
+  configurações em português.
 
 ## Stack
 
@@ -119,7 +137,7 @@ Após rodar `composer run dev`, acesse http://localhost:8000 e entre com:
 - **E-mail:** test@example.com
 - **Senha:** password
 
-Esse usuário é criado pelo seeder, tem perfil de Administrador e acesso a todos os módulos.
+Esse usuário é criado pelo seeder e tem perfil de Administrador: gerencia contas, perfis e auditoria, mas não vê o conteúdo sigiloso dos atendimentos (RN-012).
 
 ## Testes e qualidade
 
