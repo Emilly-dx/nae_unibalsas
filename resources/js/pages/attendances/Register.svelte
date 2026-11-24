@@ -24,6 +24,8 @@
     import { Label } from '@/components/ui/label';
     import { todayValue } from '@/lib/attendances';
     import { getInitials } from '@/lib/initials';
+    import { can } from '@/lib/permissions';
+    import { page } from '@inertiajs/svelte';
     import { show } from '@/routes/attendances';
     import { store, update } from '@/routes/attendances/register';
     import { show as showStudent } from '@/routes/students';
@@ -65,6 +67,7 @@
     // svelte-ignore state_referenced_locally
     let modality = $state(attendance?.modality ?? 'presential');
 
+    const canRefer = $derived(can(page.props.auth, 'referrals.create'));
     const action = $derived(attendance ? update.form(attendance.id) : store.form());
     const cancelHref = $derived(attendance ? show(attendance.id).url : index().url);
     const student = $derived(students.find((item) => item.id === studentId) ?? null);
@@ -155,10 +158,18 @@
                     <FieldTextarea id="agreements" name="agreements" class="min-h-20" maxlength={5000} value={attendance?.agreements ?? ''} placeholder="O que ficou acordado com o estudante" />
                     <InputError message={errors.agreements} />
                 </div>
-                <div class="grid gap-2 sm:w-1/2">
-                    <Label for="next_return_on">Próximo retorno</Label>
-                    <Input id="next_return_on" name="next_return_on" type="date" value={attendance?.next_return_on ?? ''} />
-                    <InputError message={errors.next_return_on} />
+                <div class="grid items-end gap-4 sm:grid-cols-2">
+                    <div class="grid gap-2">
+                        <Label for="next_return_on">Próximo retorno</Label>
+                        <Input id="next_return_on" name="next_return_on" type="date" value={attendance?.next_return_on ?? ''} />
+                        <InputError message={errors.next_return_on} />
+                    </div>
+                    {#if canRefer}
+                        <label class="flex items-center gap-2 pb-2 text-sm">
+                            <input type="checkbox" name="refer_after" value="1" class="size-4 accent-primary" />
+                            Gerar encaminhamento a partir deste atendimento
+                        </label>
+                    {/if}
                 </div>
             </section>
 

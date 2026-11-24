@@ -4,21 +4,26 @@ namespace App\Http\Controllers\Students;
 
 use App\Actions\Students\AttachStudentDocument;
 use App\Enums\AccessibilityResource;
+use App\Enums\FollowUp\FollowUpClosureReason;
+use App\Enums\FollowUp\FollowUpStatus;
 use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Students\StoreStudentRequest;
 use App\Http\Requests\Students\UpdateStudentRequest;
 use App\Models\Attendance;
+use App\Models\Referral;
 use App\Models\Student;
 use App\Models\StudentDisability;
 use App\Models\StudentDocument;
 use App\Models\SupportRequest;
 use App\Models\User;
 use App\Support\AttendancePresenter;
+use App\Support\ReferralPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -59,6 +64,8 @@ class StudentController extends Controller
                 'needs_accessibility' => $student->needs_accessibility,
                 'accessibility_resources' => $student->accessibilityResourceLabels(),
                 'active' => $student->deleted_at === null,
+                'follow_up' => $student->followUpStatus()->value,
+                'follow_up_label' => $student->followUpStatus()->label(),
             ]);
 
         return Inertia::render('students/Index', [
@@ -138,24 +145,67 @@ class StudentController extends Controller
             'history' => [
                 'attendances' => $user->can('attendances.view')
                     ? $student->attendances()->with(['student', 'professional'])->latest('scheduled_at')->get()
-                        ->map(fn (Attendance $attendance): array => AttendancePresenter::summary($attendance))
+                        ->map(fn (Attendance $attendance): array => [
+                            ...AttendancePresenter::summary($attendance),
+                            // Evolução do caso (RF-032): o profissional vê o resumo dos próprios registros.
+                            'excerpt' => $attendance->professional_id === $user->id && $attendance->registered_at !== null
+                                ? Str::limit((string) $attendance->demand, 180)
+                                : null,
+                        ])
                     : null,
                 'requests' => $user->can('triage.view')
                     ? $student->supportRequests()->latest()->get()
                         ->map(fn (SupportRequest $item): array => [
                             'id' => $item->id,
                             'date' => $item->created_at?->format('d/m/Y'),
+                            'date_iso' => $item->created_at?->toIso8601String(),
                             'origin' => $item->origin->label(),
                             'status_label' => $item->status->label(),
                         ])
                     : null,
+                'referrals' => $user->can('referrals.view')
+                    ? $student->referrals()->with(['student', 'author', 'destinationUser'])->latest('referred_on')->get()
+                        ->map(fn (Referral $referral): array => ReferralPresenter::summary($referral))
+                    : null,
             ],
+            'followUp' => $this->followUp($student, $user),
             'can' => [
                 'createRequest' => $user->can('triage.create') && $student->deleted_at === null,
                 'schedule' => $user->can('attendances.schedule') && $student->deleted_at === null,
                 'register' => $user->can('attendances.create') && $student->deleted_at === null,
+                'refer' => $user->can('referrals.create') && $student->deleted_at === null,
             ],
         ]);
+    }
+
+    /**
+     * Situação atual e resumo do acompanhamento (SRS §11, RF-030 a RF-033).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function followUp(Student $student, User $user): ?array
+    {
+        if (! $user->can('attendances.view')) {
+            return null;
+        }
+
+        $status = $student->followUpStatus();
+        $registered = $student->attendances()->registered()->with('professional')->orderBy('scheduled_at')->get();
+
+        return [
+            'status' => $status->value,
+            'status_label' => $status->label(),
+            'started_at' => $registered->first()?->scheduled_at->format('d/m/Y'),
+            'last_at' => $registered->last()?->scheduled_at->format('d/m/Y'),
+            'attendances' => $registered->count(),
+            'professionals' => $registered->map(fn (Attendance $attendance): string => $attendance->professional->name)->unique()->values(),
+            'open_referrals' => $student->referrals()->open()->count(),
+            'closed_at' => $status === FollowUpStatus::Closed ? $student->follow_up_closed_at?->format('d/m/Y') : null,
+            'closure_reason' => $status === FollowUpStatus::Closed ? $student->follow_up_closure_reason?->label() : null,
+            'closed_by' => $status === FollowUpStatus::Closed ? $student->followUpCloser?->name : null,
+            'canClose' => $status === FollowUpStatus::Active && $user->can('attendances.finish'),
+            'closureReasons' => FollowUpClosureReason::options(),
+        ];
     }
 
     public function edit(Student $student): Response

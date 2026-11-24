@@ -10,22 +10,23 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 | M2  | UI/UX + Identidade Visual (Design System)               | Concluído |
 | M3  | Estudantes (cadastro)                                   | Concluído |
 | M4  | Triagem + Atendimentos                                  | Concluído |
-| M5  | Acompanhamento + Histórico                              | Próximo   |
-| M6  | Encaminhamentos                                         | Pendente  |
-| M7  | Agenda                                                  | Pendente  |
+| M5  | Acompanhamento + Histórico                              | Concluído |
+| M6  | Encaminhamentos                                         | Concluído |
+| M7  | Agenda                                                  | Próximo   |
 | M8  | Relatórios + Indicadores                                | Pendente  |
 | M9  | Segurança + Auditoria + LGPD                            | Pendente  |
 | M10 | Validação + Usabilidade (SUS)                           | Pendente  |
 
-## Protótipo navegável (M6 e M8)
+## Protótipo navegável (M8)
 
-As telas de **Encaminhamentos** e **Relatórios** estão disponíveis como
+A tela de **Relatórios** está disponível como
 **protótipo navegável**, com dados fictícios, para validação com a equipe do
 NAE. Nessas telas nada é salvo no banco. Para escondê-las:
 `NAE_DEMO_SCREENS=false` no `.env`.
 
 O que já funciona de verdade: login, perfis e permissões (M1), interface (M2),
-cadastro de estudantes (M3) e triagem + atendimentos (M4).
+cadastro de estudantes (M3), triagem + atendimentos (M4), acompanhamento
+(M5) e encaminhamentos (M6).
 
 ### Dados de demonstração
 
@@ -66,6 +67,20 @@ cada perfil (senha `password`): `psicopedagoga@nae.test`,
   sem exceção para o administrador (RN-012). Novas permissões `triage.view`,
   `triage.create`, `triage.perform` e `attendances.schedule`. Histórico do
   estudante e Painel com dados reais.
+- **M5 — Acompanhamento + Histórico:** situação atual do acompanhamento
+  derivada dos atendimentos (sem acompanhamento, aguardando 1º atendimento,
+  em acompanhamento, encerrado), resumo (início, último atendimento,
+  profissionais, encaminhamentos em aberto), linha do tempo unificada
+  (solicitações, atendimentos e encaminhamentos), evolução do caso (o
+  profissional vê o resumo dos próprios registros) e encerramento com motivo;
+  um novo atendimento reabre o acompanhamento.
+- **M6 — Encaminhamentos:** internos (para outro profissional do NAE) e
+  externos (serviço fora do NAE), com origem, destino, motivo, data, prazo de
+  retorno, situação (enviado, em andamento, aguardando retorno, concluído,
+  cancelado) e registro do retorno (obrigatório para concluir). Encaminhar a
+  partir de um atendimento muda o status dele para "Encaminhado". Motivo e
+  retorno são criptografados e visíveis só para quem encaminhou e para o
+  profissional de destino, sem exceção para o administrador (RN-012).
 
 ## Stack
 

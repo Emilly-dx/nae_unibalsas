@@ -34,6 +34,8 @@
     import { cn } from '@/lib/utils';
     import { cancel, finish } from '@/routes/attendances';
     import { edit as registerForm } from '@/routes/attendances/register';
+    import { create as createReferral } from '@/routes/referrals';
+    import Route from '@lucide/svelte/icons/route';
     import { show as showStudent } from '@/routes/students';
     import { show as showRequest } from '@/routes/triage/requests';
     import type { AttendanceSummary } from '@/types';
@@ -53,7 +55,7 @@
     }: {
         attendance: Attendance;
         content: { demand: string | null; conduct: string | null; agreements: string | null; next_return_on: string | null } | null;
-        can: { register: boolean; cancel: boolean; finish: boolean; viewContent: boolean; viewStudent: boolean; viewRequest: boolean };
+        can: { register: boolean; cancel: boolean; finish: boolean; viewContent: boolean; viewStudent: boolean; viewRequest: boolean; refer: boolean };
     } = $props();
 
     let cancelOpen = $state(false);
@@ -119,6 +121,15 @@
                         <Button type="submit" variant="outline" disabled={processing}>Concluir</Button>
                     {/snippet}
                 </Form>
+            {/if}
+            {#if can.refer}
+                <Button variant="outline" asChild>
+                    {#snippet children(props)}
+                        <Link {...props} href={createReferral({ query: { atendimento: attendance.id } }).url}>
+                            <Route class="size-4" /> Encaminhar
+                        </Link>
+                    {/snippet}
+                </Button>
             {/if}
             {#if can.register}
                 <Button asChild>

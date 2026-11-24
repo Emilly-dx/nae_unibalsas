@@ -23,6 +23,7 @@
     import { dashboard } from '@/routes';
     import { index as studentsIndex } from '@/routes/students';
     import { index as triageIndex } from '@/routes/triage';
+    import { index as referralsIndex } from '@/routes/referrals';
     import type { NavItem } from '@/types';
 
     let {
@@ -54,10 +55,10 @@
         },
         {
             title: 'Encaminhamentos',
-            href: '/encaminhamentos',
+            href: referralsIndex(),
             icon: Route,
+            permission: 'referrals.view',
             badge: 'M6',
-            demo: true,
         },
         {
             title: 'Relatórios',

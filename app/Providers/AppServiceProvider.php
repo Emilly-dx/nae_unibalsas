@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Attendance;
 use App\Models\Contracts\SensitiveRecord;
+use App\Models\Referral;
 use App\Models\StudentDisability;
 use App\Models\StudentDocument;
 use App\Models\User;
 use App\Policies\AttendancePolicy;
+use App\Policies\ReferralPolicy;
 use App\Policies\SensitiveRecordPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -69,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(StudentDisability::class, SensitiveRecordPolicy::class);
         Gate::policy(StudentDocument::class, SensitiveRecordPolicy::class);
         Gate::policy(Attendance::class, AttendancePolicy::class);
+        Gate::policy(Referral::class, ReferralPolicy::class);
 
         Gate::before(function (User $user, string $ability, array $arguments) {
             foreach ($arguments as $argument) {

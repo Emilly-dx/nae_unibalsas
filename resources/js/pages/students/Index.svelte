@@ -30,6 +30,7 @@
     import { create as registerAttendance } from '@/routes/attendances/register';
     import { create, show } from '@/routes/students';
     import { create as createRequest } from '@/routes/triage/requests';
+    import { create as createReferral } from '@/routes/referrals';
     import type { Paginated, StudentListItem } from '@/types';
 
     type Filters = {
@@ -57,7 +58,6 @@
     let status = $state<Filters['status']>(filters.status);
 
     const canCreate = $derived(can(page.props.auth, 'students.create'));
-    const demo = $derived(page.props.demoScreens);
 
     let selectedId = $state<number | null>(null);
     const selected = $derived(
@@ -246,6 +246,14 @@
                                     {:else}
                                         <Badge variant="outline">Inativo</Badge>
                                     {/if}
+                                    {#if student.follow_up === 'active' || student.follow_up === 'waiting'}
+                                        <span class={cn('rounded-full px-2 py-0.5 text-xs font-medium',
+                                            student.follow_up === 'active'
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300')}>
+                                            {student.follow_up_label}
+                                        </span>
+                                    {/if}
                                     {#if student.needs_accessibility}
                                         <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">Acessibilidade</span>
                                     {/if}
@@ -305,9 +313,9 @@
                             {/snippet}
                         </Button>
                     {/if}
-                    {#if demo && selected.active}
+                    {#if selected.active && can(page.props.auth, 'referrals.create')}
                         <Button variant="outline" asChild>
-                            {#snippet children(props)}<Link {...props} href="/encaminhamentos">Novo encaminhamento</Link>{/snippet}
+                            {#snippet children(props)}<Link {...props} href={createReferral({ query: { estudante: selected.id } }).url}>Novo encaminhamento</Link>{/snippet}
                         </Button>
                     {/if}
                     <Button variant="ghost" asChild>

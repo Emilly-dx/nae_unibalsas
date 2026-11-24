@@ -5,9 +5,12 @@ namespace Database\Seeders;
 use App\Enums\Attendance\AttendanceModality;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\Attendance\AttendanceType;
+use App\Enums\Referral\ReferralKind;
+use App\Enums\Referral\ReferralStatus;
 use App\Enums\Triage\RequestPriority;
 use App\Enums\Triage\RequestStatus;
 use App\Models\Attendance;
+use App\Models\Referral;
 use App\Models\Student;
 use App\Models\SupportRequest;
 use App\Models\User;
@@ -107,6 +110,35 @@ class DemoDataSeeder extends Seeder
                 $attendance->registered_at = $date->addHour();
                 $attendance->save();
             }
+        }
+
+        // Encaminhamentos.
+        $referrals = [
+            [$students[12], ReferralKind::Internal, $psychologist, null, ReferralStatus::InProgress, 10],
+            [$students[13], ReferralKind::External, null, 'Clínica UNIBALSAS', ReferralStatus::AwaitingReturn, 20],
+            [$students[14], ReferralKind::External, null, 'Coordenação do curso', ReferralStatus::Completed, 30],
+            [$students[15], ReferralKind::External, null, 'CIA — Comitê de Inclusão e Acessibilidade', ReferralStatus::Sent, 3],
+        ];
+
+        foreach ($referrals as [$student, $kind, $destination, $service, $status, $daysAgo]) {
+            $referral = new Referral([
+                'kind' => $kind,
+                'destination_name' => $service,
+                'reason' => 'Motivo fictício de demonstração.',
+                'referred_on' => CarbonImmutable::today()->subDays($daysAgo),
+                'return_deadline' => CarbonImmutable::today()->subDays($daysAgo)->addDays(15),
+            ]);
+            $referral->student()->associate($student);
+            $referral->created_by = $psychopedagogue->id;
+            $referral->destination_user_id = $destination?->id;
+            $referral->status = $status;
+
+            if ($status === ReferralStatus::Completed) {
+                $referral->return_notes = 'Retorno fictício de demonstração.';
+                $referral->returned_at = CarbonImmutable::today()->subDays(5);
+            }
+
+            $referral->save();
         }
 
         SupportRequest::factory()->for($students[12])->create([

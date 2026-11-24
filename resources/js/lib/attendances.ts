@@ -51,3 +51,16 @@ export function todayValue(): string {
 
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
+
+const referralStatusStyles: Record<string, string> = {
+    sent: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+    in_progress:
+        'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+    awaiting_return:
+        'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+    completed: 'bg-muted text-muted-foreground',
+    cancelled: 'bg-muted text-muted-foreground line-through',
+};
+
+export const referralStatusClass = (status: string): string =>
+    referralStatusStyles[status] ?? referralStatusStyles.completed;

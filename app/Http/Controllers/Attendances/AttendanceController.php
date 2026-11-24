@@ -84,6 +84,8 @@ class AttendanceController extends Controller
                 'viewContent' => $canViewContent,
                 'viewStudent' => $user->can('students.view'),
                 'viewRequest' => $user->can('triage.view'),
+                'refer' => $user->can('referrals.create') && $attendance->professional_id === $user->id
+                    && in_array($attendance->status, [AttendanceStatus::Attended, AttendanceStatus::Completed, AttendanceStatus::Referred], true),
             ],
         ]);
     }
@@ -137,9 +139,7 @@ class AttendanceController extends Controller
         $attendance->scheduled_by = $user->id;
         $this->fillRecord($attendance, $data);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Atendimento registrado.']);
-
-        return to_route('attendances.show', $attendance);
+        return $this->afterRegistration($request, $attendance);
     }
 
     public function updateRegistration(RegisterAttendanceRequest $request, Attendance $attendance): RedirectResponse
@@ -148,7 +148,19 @@ class AttendanceController extends Controller
 
         $this->fillRecord($attendance, $request->validated());
 
+        return $this->afterRegistration($request, $attendance);
+    }
+
+    /**
+     * Após registrar, segue para o encaminhamento quando o profissional pediu.
+     */
+    private function afterRegistration(Request $request, Attendance $attendance): RedirectResponse
+    {
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atendimento registrado.']);
+
+        if ($request->boolean('refer_after') && $request->user()?->can('referrals.create')) {
+            return to_route('referrals.create', ['atendimento' => $attendance->id]);
+        }
 
         return to_route('attendances.show', $attendance);
     }

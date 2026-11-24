@@ -51,3 +51,19 @@ export type QueueItem = {
     priority: 'normal' | 'high';
     date: string | null;
 };
+
+export type ReferralSummary = {
+    id: number;
+    student: { id: number; name: string; course: string; period: number };
+    kind: 'internal' | 'external';
+    kind_label: string;
+    origin: string;
+    destination: string;
+    status: string;
+    status_label: string;
+    referred_on: string;
+    referred_on_iso: string;
+    return_deadline: string | null;
+    overdue: boolean;
+    attendance_id: number | null;
+};

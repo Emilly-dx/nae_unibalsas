@@ -30,13 +30,14 @@
     import { create as createStudent } from '@/routes/students';
     import { index as triageIndex } from '@/routes/triage';
     import { create as createRequest } from '@/routes/triage/requests';
+    import { create as createReferral } from '@/routes/referrals';
     import type { AttendanceSummary } from '@/types';
 
     let {
         stats,
         todayAgenda,
     }: {
-        stats: { today: number | null; queue: number | null; following: number | null };
+        stats: { today: number | null; queue: number | null; referrals: number | null; following: number | null };
         todayAgenda: (AttendanceSummary & { canRegister: boolean })[];
     } = $props();
 
@@ -77,7 +78,7 @@
             },
             { title: 'Nova solicitação', href: createRequest().url, icon: Inbox, show: can(auth, 'triage.create') },
             { title: 'Registrar atendimento', href: registerAttendance().url, icon: FileText, show: can(auth, 'attendances.create') },
-            { title: 'Novo encaminhamento', href: '/encaminhamentos', icon: Route, show: demo },
+            { title: 'Novo encaminhamento', href: createReferral().url, icon: Route, show: can(auth, 'referrals.create') },
             { title: 'Relatórios', href: '/relatorios', icon: ChartColumn, show: demo },
         ].filter((shortcut) => shortcut.show),
     );
@@ -119,8 +120,8 @@
         {#if stats.queue !== null}
             <StatCard title="Fila de triagem" value={stats.queue} hint="Solicitações aguardando análise" icon={Inbox} />
         {/if}
-        {#if demo}
-            <StatCard title="Encaminhamentos" value="—" hint="Disponível no módulo M6" icon={Route} />
+        {#if stats.referrals !== null}
+            <StatCard title="Encaminhamentos" value={stats.referrals} hint="Em aberto, aguardando retorno" icon={Route} />
         {/if}
         {#if stats.following !== null}
             <StatCard title="Em acompanhamento" value={stats.following} hint="Estudantes atendidos no semestre" icon={Users} />

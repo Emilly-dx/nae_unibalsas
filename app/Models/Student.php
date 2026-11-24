@@ -3,15 +3,19 @@
 namespace App\Models;
 
 use App\Enums\AccessibilityResource;
+use App\Enums\FollowUp\FollowUpClosureReason;
+use App\Enums\FollowUp\FollowUpStatus;
 use App\Enums\Modality;
 use App\Enums\Sex;
 use App\Enums\Shift;
+use App\Enums\Triage\RequestStatus;
 use Carbon\CarbonImmutable;
 use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -42,6 +46,9 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property list<string>|null $accessibility_resources
  * @property bool $has_external_follow_up
  * @property CarbonImmutable|null $consent_at
+ * @property CarbonImmutable|null $follow_up_closed_at
+ * @property int|null $follow_up_closed_by
+ * @property FollowUpClosureReason|null $follow_up_closure_reason
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
@@ -72,6 +79,8 @@ class Student extends Model
             'accessibility_resources' => 'array',
             'has_external_follow_up' => 'boolean',
             'consent_at' => 'immutable_datetime',
+            'follow_up_closed_at' => 'immutable_datetime',
+            'follow_up_closure_reason' => FollowUpClosureReason::class,
         ];
     }
 
@@ -100,6 +109,47 @@ class Student extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    /**
+     * @return HasMany<Referral, $this>
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Referral::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function followUpCloser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'follow_up_closed_by');
+    }
+
+    /**
+     * Situação atual do acompanhamento (RF-033), derivada dos atendimentos
+     * (RN-009). Um atendimento registrado depois do encerramento reabre o
+     * acompanhamento.
+     */
+    public function followUpStatus(): FollowUpStatus
+    {
+        $lastRegistered = $this->attendances()->registered()->max('registered_at');
+        $lastRegistered = $lastRegistered === null ? null : CarbonImmutable::parse((string) $lastRegistered);
+
+        if ($this->follow_up_closed_at !== null
+            && ($lastRegistered === null || $lastRegistered->lessThanOrEqualTo($this->follow_up_closed_at))) {
+            return FollowUpStatus::Closed;
+        }
+
+        if ($lastRegistered !== null) {
+            return FollowUpStatus::Active;
+        }
+
+        $waiting = $this->supportRequests()->whereIn('status', [RequestStatus::PendingTriage, RequestStatus::Scheduled])->exists()
+            || $this->attendances()->where('status', 'scheduled')->exists();
+
+        return $waiting ? FollowUpStatus::Waiting : FollowUpStatus::None;
     }
 
     /**

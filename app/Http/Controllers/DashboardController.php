@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Triage\RequestStatus;
 use App\Models\Attendance;
+use App\Models\Referral;
 use App\Models\SupportRequest;
 use App\Models\User;
 use App\Support\AttendancePresenter;
@@ -35,6 +36,9 @@ class DashboardController extends Controller
                 'today' => $canAttendances ? $todayAgenda->count() : null,
                 'queue' => $user->can('triage.view')
                     ? SupportRequest::query()->where('status', RequestStatus::PendingTriage)->count()
+                    : null,
+                'referrals' => $user->can('referrals.view')
+                    ? Referral::query()->open()->count()
                     : null,
                 'following' => $canAttendances
                     ? Attendance::query()->registered()->where('scheduled_at', '>=', $semesterStart)
