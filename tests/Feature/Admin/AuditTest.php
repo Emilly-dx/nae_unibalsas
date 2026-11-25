@@ -14,7 +14,7 @@ beforeEach(function () {
 describe('trilha de auditoria (RF-051 a RF-054)', function () {
     test('lista quem fez o quê, quando e quais campos mudaram, sem os valores', function () {
         $paula = User::factory()->create(['name' => 'Paula']);
-        $student = Student::factory()->create();
+        $student = Student::factory()->create(['course' => 'Psicologia', 'phone' => '99911112222']);
         $this->actingAs($paula);
         $student->update(['phone' => '99988887777', 'course' => 'Direito']);
 
