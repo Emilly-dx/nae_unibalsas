@@ -245,6 +245,19 @@ php artisan optimize
 php artisan up
 ```
 
+### Versão de testes no Render (grátis, sem cartão)
+
+O plano grátis do Render não pede cartão. Limitações: o site "dorme" depois de 15 minutos sem acesso (a primeira visita leva cerca de 1 minuto para acordar), o banco grátis expira em 30 dias e os arquivos enviados (laudos) somem quando o site dorme ou recebe um novo deploy. Use só dados e arquivos fictícios.
+
+O repositório já traz o `Dockerfile`, o `docker/start.sh` e o `render.yaml`. A cada início, o contêiner roda as migrations e o `php artisan nae:preparar-servidor`, que cria os perfis, o administrador e os dados fictícios só na primeira vez.
+
+1. Gere uma chave nova para o servidor (não use a do seu `.env`): `php artisan key:generate --show`.
+2. Em render.com, entre com o GitHub e escolha **New → Blueprint**, com o repositório `nae_unibalsas`. O Render lê o `render.yaml` e cria o site e o banco PostgreSQL grátis.
+3. Preencha os valores pedidos na tela: `APP_KEY` (a chave do passo 1), `NAE_ADMIN_EMAIL`, `NAE_ADMIN_PASSWORD` e `NAE_DEMO_PASSWORD` (senhas fortes).
+4. Aguarde o deploy e abra o endereço `https://nae-unibalsas.onrender.com` (ou o que aparecer no painel).
+
+Sem Blueprint: crie um **PostgreSQL** (plano Free) e um **Web Service** com o repositório (runtime Docker, plano Free) e copie as variáveis do `render.yaml`, usando a _Internal Database URL_ do banco em `DB_URL`.
+
 ## Testes e qualidade
 
 ```bash

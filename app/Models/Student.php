@@ -186,8 +186,8 @@ class Student extends Model
         $digits = Registration::digits($term);
 
         $query->where(function (Builder $query) use ($term, $digits) {
-            $query->where('name', 'like', "%{$term}%")
-                ->orWhere('registration', 'like', "%{$term}%")
+            $query->whereLike('name', "%{$term}%")
+                ->orWhereLike('registration', "%{$term}%")
                 ->when($digits !== '', fn (Builder $query) => $query
                     ->orWhereRaw("replace(registration, '.', '') like ?", ["%{$digits}%"]));
         });

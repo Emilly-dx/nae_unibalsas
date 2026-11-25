@@ -1,0 +1,57 @@
+# Blueprint do Render (plano grátis) para a versão de testes do NAE.
+# Render → New → Blueprint → escolha este repositório. Os valores marcados
+# com "sync: false" são pedidos na tela e nunca ficam no GitHub.
+services:
+    - type: web
+      name: nae-unibalsas
+      runtime: docker
+      plan: free
+      region: virginia
+      branch: main
+      healthCheckPath: /up
+      envVars:
+          - key: APP_NAME
+            value: NAE UNIBALSAS
+          - key: APP_ENV
+            value: staging
+          - key: APP_DEBUG
+            value: 'false'
+          - key: APP_KEY
+            sync: false
+          - key: DB_CONNECTION
+            value: pgsql
+          - key: DB_URL
+            fromDatabase:
+                name: nae-db
+                property: connectionString
+          - key: SESSION_DRIVER
+            value: database
+          - key: SESSION_SECURE_COOKIE
+            value: 'true'
+          - key: CACHE_STORE
+            value: database
+          - key: QUEUE_CONNECTION
+            value: sync
+          - key: MAIL_MAILER
+            value: log
+          - key: LOG_LEVEL
+            value: warning
+          - key: NAE_DOCUMENTS_DISK
+            value: local
+          - key: NAE_DEMO_DATA
+            value: 'true'
+          - key: NAE_ADMIN_NAME
+            value: Administração do NAE
+          - key: NAE_ADMIN_EMAIL
+            sync: false
+          - key: NAE_ADMIN_PASSWORD
+            sync: false
+          - key: NAE_DEMO_PASSWORD
+            sync: false
+
+databases:
+    - name: nae-db
+      plan: free
+      region: virginia
+      databaseName: nae
+      user: nae
