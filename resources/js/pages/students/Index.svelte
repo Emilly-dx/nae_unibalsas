@@ -18,6 +18,7 @@
     import Users from '@lucide/svelte/icons/users';
     import AppHead from '@/components/AppHead.svelte';
     import Heading from '@/components/Heading.svelte';
+    import { formatPhone } from '@/lib/masks';
     import { Badge } from '@/components/ui/badge';
     import { Button } from '@/components/ui/button';
     import { Input } from '@/components/ui/input';
@@ -279,7 +280,7 @@
                     {#if selected.social_name}<dt class="text-muted-foreground">Nome civil</dt><dd>{selected.name}</dd>{/if}
                     <dt class="text-muted-foreground">Matrícula</dt><dd class="font-mono">{selected.registration}</dd>
                     <dt class="text-muted-foreground">E-mail</dt><dd class="truncate">{selected.email || '—'}</dd>
-                    <dt class="text-muted-foreground">Telefone</dt><dd>{selected.phone || '—'}</dd>
+                    <dt class="text-muted-foreground">Telefone</dt><dd>{formatPhone(selected.phone) || '—'}</dd>
                     <dt class="text-muted-foreground">Turno</dt><dd>{selected.shift_label || '—'}</dd>
                 </dl>
                 {#if selected.accessibility_resources.length > 0}
