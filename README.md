@@ -22,6 +22,11 @@ Plataforma Web de Gestão do Núcleo de Apoio ao Estudante (NAE) da UNIBALSAS.
 Todos os módulos do SRS (M1 a M9) funcionam com dados reais. O próximo passo
 é a validação com a equipe do NAE e a avaliação de usabilidade (M10).
 
+**Versão de testes no ar:** https://nae-unibalsas-teste-kukwe1.laravel.cloud
+(Laravel Cloud, servidor nos EUA, só com dados fictícios). As contas de
+demonstração e as senhas são entregues pessoalmente à equipe do NAE; nenhuma
+senha fica neste repositório.
+
 Depois de atualizar o projeto, rode as migrations e atualize permissões e
 perfis (o comando só acrescenta o que falta):
 
@@ -185,52 +190,48 @@ Requisitos do servidor: PHP 8.4 (extensões `pdo_mysql`, `mbstring`, `openssl`, 
 
 ### Versão de testes no Laravel Cloud
 
-Passo a passo para colocar a versão de testes (dados fictícios) no [Laravel Cloud](https://cloud.laravel.com):
+A versão de testes (dados fictícios) está no [Laravel Cloud](https://cloud.laravel.com), plano Starter, região **US East (Virginia)**. Como foi configurada:
 
-1. **No computador, uma vez:** instale o pacote que liga o Laravel ao armazenamento de arquivos da nuvem e envie ao GitHub:
-    ```bash
-    composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
-    ```
-2. **Criar a aplicação:** entre em cloud.laravel.com com o GitHub, escolha o plano Starter, clique em _New application_ e selecione o repositório e a branch `main`.
-3. **Recursos** (no painel da aplicação):
-    - _Add database_ → **Laravel MySQL** (tamanho Flex).
-    - _Add bucket_ → **Laravel Object Storage**, visibilidade **Private**, nome do disco `documentos`. **Não** marque como disco padrão.
-4. **Settings → General:** PHP **8.4**.
-5. **Settings → Environment variables:**
+1. **Aplicação:** _New application_ com o repositório `nae_unibalsas`. Em **Settings → General**, a branch é a **`main`** (a `teste` é só para trabalhar) e o acesso ao repositório é somente leitura.
+2. **Recursos** (painel do ambiente):
+    - **Laravel MySQL** 8.4 (Flex, dorme quando não há uso).
+    - **Bucket** `nae-laudos` (Laravel Object Storage), visibilidade **Private**, disco `documentos`, **não** é o disco padrão. Os laudos só são baixados pelo sistema, depois da verificação de permissão.
+3. **Settings → General:** PHP **8.4** e Node **22** (as versões em que o projeto é testado).
+4. **Custom environment variables** (o `APP_KEY` e os dados do banco o Cloud gera sozinho; mantenha a linha do `APP_KEY`):
     ```dotenv
     APP_NAME="NAE UNIBALSAS"
     VITE_APP_NAME="NAE UNIBALSAS"
     APP_ENV=staging
     APP_DEBUG=false
+    LOG_LEVEL=warning
     SESSION_DRIVER=database
     SESSION_SECURE_COOKIE=true
     CACHE_STORE=database
     QUEUE_CONNECTION=sync
     MAIL_MAILER=log
-    LOG_LEVEL=warning
     NAE_DOCUMENTS_DISK=documentos
-    NAE_DEMO_PASSWORD=uma-senha-forte-so-para-o-teste
+    NAE_ADMIN_NAME="Administração do NAE"
+    NAE_ADMIN_EMAIL=...
+    NAE_ADMIN_PASSWORD=...
+    NAE_DEMO_DATA=true
+    NAE_DEMO_PASSWORD=...
     ```
-6. **Settings → Deployments:**
-    - _Build commands_ (sem `--no-dev`, porque os dados fictícios usam o Faker):
-        ```bash
-        composer install --optimize-autoloader
-        npm ci --audit false
-        npm run build
-        php artisan optimize
-        ```
+5. **Settings → Deployments:**
+    - _Build commands_: o padrão do Cloud (`composer install --no-dev ...`, `npm ci`, `npm run build`). O Faker está no `require` para os dados fictícios funcionarem sem as dependências de desenvolvimento.
     - _Deploy commands_:
         ```bash
         php artisan migrate --force
-        php artisan db:seed --class=AccessControlSeeder --force
+        php artisan nae:preparar-servidor
         ```
-7. Clique em **Deploy**. Quando terminar, na aba **Commands**:
-    ```bash
-    php artisan nae:criar-admin --name="Administrador" --email="seu-email@exemplo.com" --password="senha-forte"
-    php artisan db:seed --class=DemoDataSeeder --force
-    ```
-    As contas de demonstração (psicopedagoga@nae.test etc.) usam a senha de `NAE_DEMO_PASSWORD`.
-8. O sistema fica no endereço `*.laravel.cloud` mostrado no painel. A cada `git push` na `main`, o Cloud publica a nova versão.
+        O `nae:preparar-servidor` confere perfis e permissões a cada deploy e cria o administrador e os dados fictícios **só na primeira vez**. Depois do primeiro deploy, a variável `NAE_ADMIN_PASSWORD` pode ser apagada.
+    - _Push to deploy_ ligado: cada merge na `main` publica a nova versão.
+6. **Organização → Settings → Billing:** limite de gasto de **US$ 5** com **Stop compute at the limit**, para nunca passar do crédito mensal.
+
+As demais contas (professor, equipe do NAE) são criadas pela tela **Usuários**, cada pessoa com a sua.
+
+**Encerrar a versão de testes:** em **Settings → Billing → Cancel subscription** antes do fim do primeiro mês, e remova o cartão.
+
+**Antes de usar com dados reais:** o servidor fica fora do Brasil, então é preciso avaliar a transferência internacional de dados (LGPD, art. 33) ou escolher uma hospedagem no Brasil, além de contas individuais e 2FA para a equipe.
 
 **Ao atualizar o sistema no servidor:**
 
@@ -245,7 +246,7 @@ php artisan optimize
 php artisan up
 ```
 
-### Versão de testes no Render (grátis, sem cartão)
+### Alternativa sem cartão: Render (grátis)
 
 O plano grátis do Render não pede cartão. Limitações: o site "dorme" depois de 15 minutos sem acesso (a primeira visita leva cerca de 1 minuto para acordar), o banco grátis expira em 30 dias e os arquivos enviados (laudos) somem quando o site dorme ou recebe um novo deploy. Use só dados e arquivos fictícios.
 
