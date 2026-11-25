@@ -186,3 +186,11 @@ describe('decisão da triagem (RF-019 a RF-021)', function () {
             );
     });
 });
+
+test('na fila, só quem faz triagem vê "Abrir e triar"; os demais só abrem a solicitação', function () {
+    $this->actingAs(userWithPermissions('triage.view', 'triage.create'))->get(route('triage.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('can.perform', false));
+
+    $this->actingAs(userWithPermissions('triage.view', 'triage.perform'))->get(route('triage.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('can.perform', true));
+});

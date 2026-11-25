@@ -51,6 +51,7 @@ class TriageController extends Controller
                 : null,
             'can' => [
                 'triage' => $canTriage,
+                'perform' => $user->can('triage.perform'),
                 'createRequest' => $user->can('triage.create'),
                 'schedule' => $user->can('attendances.schedule'),
                 'register' => $user->can('attendances.create'),
