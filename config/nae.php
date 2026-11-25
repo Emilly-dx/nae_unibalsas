@@ -14,6 +14,19 @@ return [
     'documents_disk' => env('NAE_DOCUMENTS_DISK', 'local'),
 
     /*
+    | Preparação automática de um servidor de testes (nae:preparar-servidor),
+    | para painéis sem terminal (ex.: Render). Cria o primeiro administrador
+    | se NAE_ADMIN_EMAIL e NAE_ADMIN_PASSWORD estiverem definidos, e os dados
+    | fictícios de demonstração se NAE_DEMO_DATA=true. Pode rodar a cada deploy.
+    */
+    'server_setup' => [
+        'admin_name' => env('NAE_ADMIN_NAME', 'Administração do NAE'),
+        'admin_email' => env('NAE_ADMIN_EMAIL'),
+        'admin_password' => env('NAE_ADMIN_PASSWORD'),
+        'demo_data' => (bool) env('NAE_DEMO_DATA', false),
+    ],
+
+    /*
     | Cursos de graduação da UNIBALSAS e a modalidade de cada um
     | (presential, hybrid = semipresencial, distance = EAD).
     | Fonte: Vestibular UNIBALSAS 2027.1 e cursos EAD. Para incluir um curso

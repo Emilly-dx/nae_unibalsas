@@ -34,8 +34,8 @@ class UserController extends Controller
         $users = User::query()
             ->with('roles')
             ->when($search !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")))
+                ->whereLike('name', "%{$search}%")
+                ->orWhereLike('email', "%{$search}%")))
             ->when($role !== '', fn (Builder $query) => $query->whereHas('roles', fn (Builder $query) => $query->where('slug', $role)))
             ->when($status === 'ativos', fn (Builder $query) => $query->whereNull('deactivated_at'))
             ->when($status === 'inativos', fn (Builder $query) => $query->whereNotNull('deactivated_at'))
@@ -48,7 +48,8 @@ class UserController extends Controller
             ->where('causer_type', (new User)->getMorphClass())
             ->whereIn('causer_id', $users->getCollection()->pluck('id'))
             ->groupBy('causer_id')
-            ->pluck(DB::raw('max(created_at)'), 'causer_id');
+            ->selectRaw('causer_id, max(created_at) as last_login')
+            ->pluck('last_login', 'causer_id');
 
         /** @var User $me */
         $me = $request->user();
