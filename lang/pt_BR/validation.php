@@ -18,6 +18,7 @@ return [
         'string' => 'O campo :attribute deve ter pelo menos :min caracteres.',
     ],
     'unique' => 'Este :attribute já está em uso.',
+    'uploaded' => 'Não foi possível enviar o arquivo.',
     'password' => [
         'letters' => 'A senha deve conter pelo menos uma letra.',
         'mixed' => 'A senha deve conter letras maiúsculas e minúsculas.',

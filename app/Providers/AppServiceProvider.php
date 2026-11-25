@@ -14,6 +14,7 @@ use App\Policies\SensitiveRecordPolicy;
 use App\Support\Audit\RecordAuthenticationActivity;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -28,7 +29,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // No Windows, o `php artisan serve` não repassa as variáveis TEMP/TMP ao
+        // servidor do PHP: sem pasta temporária, todo upload falha com
+        // "failed to upload". Repassando as duas, os uploads funcionam.
+        ServeCommand::$passthroughVariables = array_values(array_unique([
+            ...ServeCommand::$passthroughVariables,
+            'TEMP',
+            'TMP',
+        ]));
     }
 
     /**
