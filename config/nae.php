@@ -1,6 +1,11 @@
 <?php
 
 return [
+    /*
+    | Senha das contas criadas pelo DemoDataSeeder (dados fictícios).
+    | Fora do computador local, defina uma senha forte em NAE_DEMO_PASSWORD.
+    */
+    'demo_password' => env('NAE_DEMO_PASSWORD', 'password'),
 
     /*
     | Cursos de graduação da UNIBALSAS e a modalidade de cada um

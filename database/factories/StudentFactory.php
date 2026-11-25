@@ -19,14 +19,14 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'registration' => fake()->unique()->numerify('2#.'.fake()->numberBetween(1, 2).'.#####'),
+            'name' => fake()->firstName().' '.fake()->lastName().' '.fake()->lastName(),
+            'registration' => fake()->unique()->numerify('2'.fake()->numberBetween(1, 6).'.'.fake()->numberBetween(1, 2).'.#####'),
             'course' => $course = fake()->randomElement(Courses::names()),
             'period' => fake()->numberBetween(1, 10),
             'shift' => fake()->randomElement(Shift::cases()),
             'modality' => Courses::all()[$course],
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->numerify('(99) 9####-####'),
+            'phone' => fake()->numerify('999########'),
             'birth_date' => fake()->dateTimeBetween('-40 years', '-17 years')->format('Y-m-d'),
             'sex' => fake()->randomElement(Sex::cases()),
             'guardian_name' => null,

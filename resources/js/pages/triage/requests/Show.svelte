@@ -107,7 +107,7 @@
         </Button>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+    <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
         <section class="space-y-5 rounded-xl border bg-card p-5">
             <div class="flex items-start justify-between gap-3">
                 <div>
@@ -214,7 +214,7 @@
                             <FieldTextarea id="triage_notes" name="triage_notes" maxlength={5000} placeholder="Registro da análise inicial (visível só para você)" />
                             <InputError message={errors.triage_notes} />
                         </div>
-                        <div class="grid grid-cols-[1.4fr_1fr_1fr] gap-3">
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-[1.4fr_1fr_1fr] [&>*:first-child]:col-span-2 sm:[&>*:first-child]:col-span-1">
                             <div class="grid gap-2">
                                 <Label for="date">Data <span class="text-primary">*</span></Label>
                                 <Input id="date" name="date" type="date" min={todayValue()} />

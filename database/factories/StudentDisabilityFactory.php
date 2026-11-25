@@ -21,7 +21,7 @@ class StudentDisabilityFactory extends Factory
             'student_id' => Student::factory(),
             'created_by' => User::factory(),
             'cid_code' => fake()->randomElement(['F84.0', 'F90.0', 'H54.1', 'F81.0']),
-            'description' => fake()->sentence(),
+            'description' => 'Descrição fictícia para teste.',
         ];
     }
 }
