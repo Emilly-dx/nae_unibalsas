@@ -231,3 +231,50 @@ test('as mensagens de validação do registro ficam em português', function () 
         ->post(route('attendances.register.store'), registerData(['student_id' => null]))
         ->assertSessionHasErrors(['student_id' => 'O campo estudante é obrigatório.']);
 });
+
+test('quem registra sem agendamento informa o horário de início, que vai para a agenda', function () {
+    $professional = userWithPermissions('attendances.view', 'attendances.create');
+    $student = Student::factory()->create();
+
+    $this->actingAs($professional)
+        ->post(route('attendances.register.store'), registerData(['student_id' => $student->id, 'start_time' => null, 'end_time' => null]))
+        ->assertSessionHasErrors(['start_time' => 'Informe o horário de início do atendimento.']);
+
+    $this->actingAs($professional)
+        ->post(route('attendances.register.store'), registerData(['student_id' => $student->id, 'start_time' => '14:20', 'end_time' => null]))
+        ->assertSessionHasNoErrors();
+
+    expect(Attendance::query()->where('student_id', $student->id)->sole()->scheduled_at->format('H:i'))->toBe('14:20');
+});
+
+test('registro antigo sem horário (00:00) passa a usar o início informado na edição', function () {
+    $professional = userWithPermissions('attendances.view', 'attendances.create');
+    $attendance = Attendance::factory()->registered()->create([
+        'professional_id' => $professional->id,
+        'scheduled_at' => now()->startOfDay(),
+    ]);
+
+    $this->actingAs($professional)
+        ->put(route('attendances.register.update', $attendance), registerData(['start_time' => '10:15', 'end_time' => '11:00']))
+        ->assertSessionHasNoErrors();
+
+    expect($attendance->fresh()?->scheduled_at->format('H:i'))->toBe('10:15');
+});
+
+test('atendimento já encaminhado ainda pode ter o registro corrigido, sem perder a situação', function () {
+    $professional = userWithPermissions('attendances.view', 'attendances.create');
+    $attendance = Attendance::factory()->registered()->create([
+        'professional_id' => $professional->id,
+        'status' => AttendanceStatus::Referred,
+    ]);
+
+    $this->actingAs($professional)->get(route('attendances.register.edit', $attendance))->assertOk();
+
+    $this->actingAs($professional)
+        ->put(route('attendances.register.update', $attendance), registerData(['demand' => 'Demanda corrigida']))
+        ->assertSessionHasNoErrors();
+
+    $attendance->refresh();
+    expect($attendance->status)->toBe(AttendanceStatus::Referred)
+        ->and($attendance->demand)->toBe('Demanda corrigida');
+});

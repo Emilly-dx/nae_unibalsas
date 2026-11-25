@@ -28,7 +28,8 @@ class AttendancePolicy
     {
         return $attendance->professional_id === $user->id
             && $user->can('attendances.create')
-            && in_array($attendance->status, [AttendanceStatus::Scheduled, AttendanceStatus::Attended], true);
+            // Encaminhado continua editável: corrigir o registro depois de gerar o encaminhamento.
+            && in_array($attendance->status, [AttendanceStatus::Scheduled, AttendanceStatus::Attended, AttendanceStatus::Referred], true);
     }
 
     /**
