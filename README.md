@@ -137,7 +137,64 @@ Após rodar `composer run dev`, acesse http://localhost:8000 e entre com:
 - **E-mail:** test@example.com
 - **Senha:** password
 
-Esse usuário é criado pelo seeder e tem perfil de Administrador: gerencia contas, perfis e auditoria, mas não vê o conteúdo sigiloso dos atendimentos (RN-012).
+Esse usuário é criado pelo seeder (só fora de produção) e tem perfil de Administrador: gerencia contas, perfis e auditoria, mas não vê o conteúdo sigiloso dos atendimentos (RN-012).
+
+Para ter dados fictícios (estudantes, atendimentos, encaminhamentos e uma conta para cada perfil, todas com a senha `password`):
+
+```bash
+php artisan db:seed --class=DemoDataSeeder
+```
+
+## Colocar no ar (hospedagem)
+
+Requisitos do servidor: PHP 8.4 (extensões `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `zip`), MySQL 8, Composer e HTTPS. O Node 22 só é necessário para gerar as telas (`npm run build`), o que pode ser feito no próprio computador antes de enviar.
+
+1. **Código e dependências**
+    ```bash
+    composer install --no-dev --optimize-autoloader
+    npm ci && npm run build
+    ```
+2. **`.env` de produção** (copie de `.env.example` e ajuste):
+    ```dotenv
+    APP_ENV=production
+    APP_DEBUG=false
+    APP_URL=https://endereco-do-sistema
+    DB_CONNECTION=mysql
+    DB_HOST=...
+    DB_DATABASE=...
+    DB_USERNAME=...
+    DB_PASSWORD=...
+    SESSION_SECURE_COOKIE=true
+    LOG_LEVEL=warning
+    MAIL_MAILER=smtp        # e os dados do e-mail, para o link de nova senha
+    ```
+    Depois gere uma chave nova: `php artisan key:generate`. Nunca reaproveite a chave nem as senhas do computador local.
+3. **Banco, perfis e o primeiro administrador**
+    ```bash
+    php artisan migrate --force
+    php artisan db:seed --force          # em produção cria só módulos, permissões e perfis
+    php artisan nae:criar-admin          # pede nome, e-mail e senha
+    php artisan optimize
+    ```
+    As demais contas são criadas pela tela **Usuários**.
+4. **Servidor web:** a raiz do site deve ser a pasta `public/`. As pastas `storage/` e `bootstrap/cache/` precisam de permissão de escrita.
+5. **Uploads:** no `php.ini`, `upload_max_filesize = 12M` e `post_max_size = 16M` (o sistema aceita laudos de até 10 MB). Os documentos ficam no disco privado (`storage/app/private`), fora da pasta pública.
+6. **Backup:** configure cópia diária do banco MySQL e da pasta `storage/app/private`.
+
+**Versão de testes com dados fictícios:** use `APP_ENV=staging`, defina uma senha forte em `NAE_DEMO_PASSWORD` e rode `php artisan db:seed --class=DemoDataSeeder`. Não use dados reais de estudantes nessa versão.
+
+**Ao atualizar o sistema no servidor:**
+
+```bash
+php artisan down
+git pull
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan db:seed --class=AccessControlSeeder --force
+php artisan optimize
+php artisan up
+```
 
 ## Testes e qualidade
 

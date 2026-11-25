@@ -17,10 +17,14 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AccessControlSeeder::class);
 
-        // User::factory(10)->create();
+        // Em produção não existe conta com senha conhecida: o primeiro
+        // administrador é criado com `php artisan nae:criar-admin`.
+        if (app()->isProduction()) {
+            return;
+        }
 
         $user = User::factory()->create([
-            'name' => 'Test User',
+            'name' => 'Administrador (teste)',
             'email' => 'test@example.com',
         ]);
 

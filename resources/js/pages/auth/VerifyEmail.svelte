@@ -1,8 +1,8 @@
 <script module lang="ts">
     export const layout = {
-        title: 'Email verification',
+        title: 'Confirme seu e-mail',
         description:
-            'Please verify your email address by clicking on the link we just emailed to you.',
+            'Clique no link que enviamos para o seu e-mail para confirmar o endereço.',
     };
 </script>
 
@@ -22,12 +22,11 @@
     } = $props();
 </script>
 
-<AppHead title="Email verification" />
+<AppHead title="Confirmar e-mail" />
 
 {#if status === 'verification-link-sent'}
     <div class="mb-4 text-center text-sm font-medium text-green-600">
-        A new verification link has been sent to the email address you provided
-        during registration.
+        Enviamos um novo link de confirmação para o seu e-mail.
     </div>
 {/if}
 
@@ -35,11 +34,11 @@
     {#snippet children({ processing })}
         <Button type="submit" disabled={processing} variant="secondary">
             {#if processing}<Spinner />{/if}
-            Resend verification email
+            Reenviar e-mail de confirmação
         </Button>
 
         <TextLink href={logout()} as="button" class="mx-auto block text-sm">
-            Log out
+            Sair
         </TextLink>
     {/snippet}
 </Form>

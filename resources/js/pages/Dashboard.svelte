@@ -179,12 +179,12 @@
                         {#each shortcuts as shortcut (shortcut.title)}
                             <Link
                                 href={shortcut.href}
-                                class="flex items-center gap-3 rounded-lg border p-3 text-sm font-medium transition-colors hover:bg-accent/50"
+                                class="flex min-w-0 items-center gap-3 rounded-lg border p-3 text-sm font-medium break-words transition-colors hover:bg-accent/50 [hyphens:auto]"
                             >
                                 <span class="rounded-md bg-muted p-1.5 text-primary">
                                     <shortcut.icon class="size-4" />
                                 </span>
-                                {shortcut.title}
+                                <span class="min-w-0">{shortcut.title}</span>
                             </Link>
                         {/each}
                     </div>
@@ -211,7 +211,9 @@
                     </div>
                 </dl>
                 <p class="mt-4 text-xs text-muted-foreground">
-                    Dados do perfil e permissões vindos do módulo M1 (Core + ACL).
+                    {isAdmin
+                        ? 'O perfil Administrador gerencia contas e auditoria, mas não vê o conteúdo sigiloso dos atendimentos.'
+                        : 'O que você vê no menu depende das permissões do seu perfil.'}
                 </p>
             </section>
         </div>

@@ -52,43 +52,38 @@
             href: studentsIndex(),
             icon: Users,
             permission: 'students.view',
-            badge: 'M3',
         },
         {
             title: 'Triagem e atendimentos',
             href: triageIndex(),
             icon: CalendarDays,
             permission: 'attendances.view',
-            badge: 'M4',
         },
         {
             title: 'Agenda',
             href: agendaIndex(),
             icon: CalendarClock,
             permission: 'attendances.view',
-            badge: 'M7',
         },
         {
             title: 'Encaminhamentos',
             href: referralsIndex(),
             icon: Route,
             permission: 'referrals.view',
-            badge: 'M6',
         },
         {
             title: 'Relatórios',
             href: reportsIndex(),
             icon: ChartColumn,
             permission: 'reports.view',
-            badge: 'M8',
         },
     ];
 
-    // M9: contas da equipe, perfis de acesso e auditoria.
+    // Administração: contas da equipe, perfis de acesso e auditoria.
     const adminNavItems: NavItem[] = [
-        { title: 'Usuários', href: usersIndex(), icon: UserCog, permission: 'users.view', badge: 'M9' },
-        { title: 'Perfis de acesso', href: rolesIndex(), icon: ShieldCheck, permission: 'acl.manage_permissions', badge: 'M9' },
-        { title: 'Auditoria', href: auditIndex(), icon: ScrollText, permission: 'audit.view', badge: 'M9' },
+        { title: 'Usuários', href: usersIndex(), icon: UserCog, permission: 'users.view' },
+        { title: 'Perfis de acesso', href: rolesIndex(), icon: ShieldCheck, permission: 'acl.manage_permissions' },
+        { title: 'Auditoria', href: auditIndex(), icon: ScrollText, permission: 'audit.view' },
     ];
 
     const visible = (items: NavItem[]): NavItem[] =>

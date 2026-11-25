@@ -31,22 +31,20 @@
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Two-factor authentication"
-            description="Manage your two-factor authentication settings"
+            title="Verificação em duas etapas"
+            description="Uma camada extra de proteção para a sua conta"
         />
 
         {#if !twoFactorEnabled}
             <div class="flex flex-col items-start justify-start space-y-4">
                 <p class="text-muted-foreground text-sm">
-                    When you enable two-factor authentication, you will be
-                    prompted for a secure pin during login. This pin can be
-                    retrieved from a TOTP-supported application on your phone.
+                    Com a verificação em duas etapas ativada, o login pede também um código de 6 dígitos gerado por um aplicativo autenticador no celular (Google Authenticator, Microsoft Authenticator etc.).
                 </p>
 
                 <div>
                     {#if twoFactorAuth.hasSetupData()}
                         <Button onclick={() => (showSetupModal = true)}>
-                            <ShieldCheck class="size-4" />Continue setup
+                            <ShieldCheck class="size-4" />Continuar configuração
                         </Button>
                     {:else}
                         <Form
@@ -55,7 +53,7 @@
                         >
                             {#snippet children({ processing })}
                                 <Button type="submit" disabled={processing}>
-                                    Enable 2FA
+                                    Ativar
                                 </Button>
                             {/snippet}
                         </Form>
@@ -65,9 +63,7 @@
         {:else}
             <div class="flex flex-col items-start justify-start space-y-4">
                 <p class="text-muted-foreground text-sm">
-                    You will be prompted for a secure, random pin during login,
-                    which you can retrieve from the TOTP-supported application
-                    on your phone.
+                    No login, além da senha, será pedido o código de 6 dígitos do aplicativo autenticador do seu celular.
                 </p>
 
                 <div class="relative inline">
@@ -78,7 +74,7 @@
                                 type="submit"
                                 disabled={processing}
                             >
-                                Disable 2FA
+                                Desativar
                             </Button>
                         {/snippet}
                     </Form>

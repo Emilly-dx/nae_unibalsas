@@ -25,7 +25,9 @@ use RuntimeException;
  *
  *   php artisan db:seed --class=DemoDataSeeder
  *
- * Todas as contas usam a senha "password".
+ * As contas usam a senha de NAE_DEMO_PASSWORD (padrão "password", só no
+ * computador local). Num servidor de testes (APP_ENV=staging), defina uma
+ * senha forte em NAE_DEMO_PASSWORD antes de rodar.
  */
 class DemoDataSeeder extends Seeder
 {
@@ -33,6 +35,10 @@ class DemoDataSeeder extends Seeder
     {
         if (app()->isProduction()) {
             throw new RuntimeException('DemoDataSeeder não pode ser executado em produção.');
+        }
+
+        if (! app()->environment(['local', 'testing']) && $this->password() === 'password') {
+            throw new RuntimeException('Fora do computador local, defina uma senha forte em NAE_DEMO_PASSWORD.');
         }
 
         $this->call([ModuleSeeder::class, PermissionSeeder::class, RoleSeeder::class, RolePermissionSeeder::class]);
@@ -150,9 +156,16 @@ class DemoDataSeeder extends Seeder
     private function account(string $role, string $name, string $email): User
     {
         $user = User::query()->firstOrNew(['email' => $email]);
-        $user->forceFill(['name' => $name, 'password' => 'password', 'email_verified_at' => now()])->save();
+        $user->forceFill(['name' => $name, 'password' => $this->password(), 'email_verified_at' => now()])->save();
         $user->assignRole($role);
 
         return $user;
+    }
+
+    private function password(): string
+    {
+        $password = config('nae.demo_password');
+
+        return is_string($password) && $password !== '' ? $password : 'password';
     }
 }

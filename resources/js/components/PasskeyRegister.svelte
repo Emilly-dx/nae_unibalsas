@@ -53,7 +53,7 @@
         await passkeyRegister.register(name.trim());
     };
 
-    const handleCancel = () => {
+    const handleCancelar = () => {
         showForm = false;
         name = '';
     };
@@ -61,11 +61,11 @@
 
 {#if !passkeyRegister.isSupported}
     <div class="text-sm text-muted-foreground">
-        Passkeys are not supported in this browser.
+        Este navegador não é compatível com chaves de acesso.
     </div>
 {:else if !showForm}
     <Button variant="outline" onclick={() => (showForm = true)}>
-        Add passkey
+        Adicionar chave de acesso
     </Button>
 {:else}
     <form
@@ -73,17 +73,17 @@
         class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
     >
         <div class="grid gap-2">
-            <Label for="passkey-name">Passkey name</Label>
+            <Label for="passkey-name">Nome da chave</Label>
             <Input
                 id="passkey-name"
                 type="text"
                 bind:value={name}
-                placeholder="e.g., MacBook Pro, iPhone"
+                placeholder="Ex.: notebook do NAE, celular"
                 class="mt-1 block w-full border-foreground/20"
                 autofocus
             />
             <p class="text-xs text-muted-foreground">
-                A name helps you identify this passkey later.
+                O nome ajuda a reconhecer esta chave depois.
             </p>
         </div>
 
@@ -97,11 +97,11 @@
                 disabled={passkeyRegister.isLoading || !name.trim()}
             >
                 {passkeyRegister.isLoading
-                    ? 'Registering...'
-                    : 'Register passkey'}
+                    ? 'Cadastrando...'
+                    : 'Cadastrar chave'}
             </Button>
-            <Button type="button" variant="ghost" onclick={handleCancel}>
-                Cancel
+            <Button type="button" variant="ghost" onclick={handleCancelar}>
+                Cancelar
             </Button>
         </div>
     </form>

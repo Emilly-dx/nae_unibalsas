@@ -30,8 +30,8 @@
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Passkeys"
-            description="Manage your passkeys for passwordless sign-in"
+            title="Chaves de acesso (passkeys)"
+            description="Entre sem digitar a senha, usando a digital, o rosto ou o PIN do aparelho"
         />
 
         <div class="overflow-hidden rounded-lg border border-border">
@@ -46,9 +46,9 @@
                     >
                         <KeyRound class="h-7 w-7 text-muted-foreground" />
                     </div>
-                    <p class="font-medium">No passkeys yet</p>
+                    <p class="font-medium">Nenhuma chave de acesso cadastrada</p>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        Add a passkey to sign in without a password
+                        Cadastre uma chave para entrar sem senha neste aparelho
                     </p>
                 </div>
             {/if}

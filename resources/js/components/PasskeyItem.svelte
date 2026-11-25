@@ -50,10 +50,10 @@
                 {/if}
             </div>
             <p class="text-sm text-muted-foreground">
-                Added {passkey.created_at_diff}
+                Cadastrada {passkey.created_at_diff}
                 {#if passkey.last_used_at_diff}
                     <span class="mx-1 text-muted-foreground/50">/</span>
-                    Last used {passkey.last_used_at_diff}
+                    Último uso {passkey.last_used_at_diff}
                 {/if}
             </p>
         </div>
@@ -69,22 +69,21 @@
                     onclick={props.onClick}
                 >
                     <Trash2 class="h-4 w-4" />
-                    <span class="sr-only">Remove</span>
+                    <span class="sr-only">Remover</span>
                 </Button>
             {/snippet}
         </DialogTrigger>
 
         <DialogContent>
-            <DialogTitle>Remove passkey</DialogTitle>
+            <DialogTitle>Remover chave de acesso</DialogTitle>
             <DialogDescription>
-                Are you sure you want to remove the "{passkey.name}" passkey?
-                You will no longer be able to use it to sign in.
+                Remover a chave "{passkey.name}"? Ela deixará de servir para entrar no sistema.
             </DialogDescription>
             <DialogFooter>
                 <DialogClose asChild>
                     {#snippet children(props)}
                         <Button variant="secondary" onclick={props.onClick}>
-                            Cancel
+                            Cancelar
                         </Button>
                     {/snippet}
                 </DialogClose>
@@ -93,7 +92,7 @@
                     disabled={isDeleting}
                     onclick={handleDelete}
                 >
-                    {isDeleting ? 'Removing...' : 'Remove passkey'}
+                    {isDeleting ? 'Removendo...' : 'Remover chave'}
                 </Button>
             </DialogFooter>
         </DialogContent>
