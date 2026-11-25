@@ -11,7 +11,11 @@ export function getInitials(fullName?: string): string {
         return '';
     }
 
-    const names = fullName.trim().split(/\s+/u).filter(Boolean);
+    // Só palavras que começam com letra: "Administrador (teste)" vira "A", não "A(".
+    const names = fullName
+        .trim()
+        .split(/\s+/u)
+        .filter((word) => /^\p{L}/u.test(word));
 
     if (names.length === 0) {
         return '';
