@@ -293,6 +293,9 @@
                         </div>
                     </div>
                 {/if}
+                <!-- {#key}: os links são recriados ao trocar de estudante; sem isso o
+                     <Link> do Inertia continuava navegando para o primeiro estudante. -->
+                {#key selected.id}
                 <div class="mt-2 flex flex-col gap-2">
                     {#if selected.active && can(page.props.auth, 'attendances.create')}
                         <Button asChild>
@@ -317,6 +320,7 @@
                         {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro e histórico</Link>{/snippet}
                     </Button>
                 </div>
+                {/key}
             </aside>
         {/if}
         </div>
