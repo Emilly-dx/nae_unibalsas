@@ -147,7 +147,7 @@
             <div class="flex min-w-0 flex-col gap-6">
                 <section id="dados-pessoais" class="scroll-mt-4 rounded-xl border bg-card p-5">
                     {@render sectionTitle(1, 'Dados pessoais', 'Identificação do estudante.')}
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="grid items-start gap-4 md:grid-cols-2">
                         <div class="grid gap-2 md:col-span-2">
                             <Label for="name">Nome completo {@render required()}</Label>
                             <Input id="name" name="name" value={student?.name ?? ''} placeholder="Nome como consta na matrícula" maxlength={255} />
@@ -176,7 +176,7 @@
 
                 <section id="dados-academicos" class="scroll-mt-4 rounded-xl border bg-card p-5">
                     {@render sectionTitle(2, 'Dados acadêmicos', 'Vínculo com a UNIBALSAS.')}
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="grid items-start gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="registration">Matrícula {@render required()}</Label>
                             <input
@@ -240,7 +240,7 @@
 
                 <section id="contato" class="scroll-mt-4 rounded-xl border bg-card p-5">
                     {@render sectionTitle(3, 'Contato', 'Como o NAE fala com o estudante.')}
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="grid items-start gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="email">E-mail institucional {@render required()}</Label>
                             <Input id="email" name="email" type="email" value={student?.email ?? ''} placeholder="nome@unibalsas.edu.br" maxlength={255} />
@@ -271,7 +271,7 @@
 
                 <section id="apoio" class="scroll-mt-4 rounded-xl border bg-card p-5">
                     {@render sectionTitle(4, 'Apoio e acessibilidade', 'Informações para planejar o acompanhamento, com o CIA quando necessário.')}
-                    <div class="grid gap-4 md:grid-cols-2">
+                    <div class="grid items-start gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <span class="text-sm font-medium">Necessita de recursos de acessibilidade?</span>
                             <Segmented name="needs_accessibility" options={[{ value: '0', label: 'Não' }, { value: '1', label: 'Sim' }]} bind:value={needsAccessibility} />

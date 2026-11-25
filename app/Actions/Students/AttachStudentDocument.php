@@ -16,7 +16,7 @@ class AttachStudentDocument
 {
     public function handle(Student $student, User $user, UploadedFile $file, string $title): StudentDocument
     {
-        $path = $file->store("students/{$student->id}/documents", StudentDocument::DISK);
+        $path = $file->store("students/{$student->id}/documents", StudentDocument::disk());
 
         if ($path === false) {
             throw new RuntimeException('Não foi possível salvar o arquivo.');

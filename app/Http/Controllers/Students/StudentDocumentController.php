@@ -53,7 +53,7 @@ class StudentDocumentController extends Controller
             ->event('downloaded')
             ->log('downloaded');
 
-        return Storage::disk(StudentDocument::DISK)->download(
+        return Storage::disk(StudentDocument::disk())->download(
             $documentModel->path,
             $documentModel->original_name,
         );

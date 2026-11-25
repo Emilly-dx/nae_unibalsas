@@ -8,6 +8,12 @@ return [
     'demo_password' => env('NAE_DEMO_PASSWORD', 'password'),
 
     /*
+    | Disco dos laudos e documentos dos estudantes (dados sensíveis).
+    | Precisa ser PRIVADO. Local: "local". Hospedagem: o nome do bucket privado.
+    */
+    'documents_disk' => env('NAE_DOCUMENTS_DISK', 'local'),
+
+    /*
     | Cursos de graduação da UNIBALSAS e a modalidade de cada um
     | (presential, hybrid = semipresencial, distance = EAD).
     | Fonte: Vestibular UNIBALSAS 2027.1 e cursos EAD. Para incluir um curso

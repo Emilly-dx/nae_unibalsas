@@ -43,6 +43,7 @@
         registered: Paginated<AttendanceSummary> | null;
         can: {
             triage: boolean;
+            perform: boolean;
             createRequest: boolean;
             schedule: boolean;
             register: boolean;
@@ -151,7 +152,7 @@
                                 <p class="text-xs text-muted-foreground">{request.origin} · {request.date}</p>
                                 <Button size="sm" asChild>
                                     {#snippet children(props)}
-                                        <Link {...props} href={showRequest(request.id).url}>Abrir e triar</Link>
+                                        <Link {...props} href={showRequest(request.id).url}>{can.perform ? 'Abrir e triar' : 'Ver solicitação'}</Link>
                                     {/snippet}
                                 </Button>
                             </li>

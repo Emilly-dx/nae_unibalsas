@@ -79,7 +79,7 @@
                 <span class="text-sm font-medium">Modalidade</span>
                 <Segmented name="modality" options={modalities} bind:value={modality} />
             </div>
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid items-start gap-4 sm:grid-cols-3">
                 <div class="grid gap-2">
                     <Label for="date">Nova data <span class="text-primary">*</span></Label>
                     <Input id="date" name="date" type="date" min={todayValue()} value={attendance.date_value} />

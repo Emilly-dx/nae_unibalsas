@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AccessControlSeeder::class);
 
-        // Em produção não existe conta com senha conhecida: o primeiro
-        // administrador é criado com `php artisan nae:criar-admin`.
-        if (app()->isProduction()) {
+        // Conta com senha conhecida só no computador local. Online (produção ou
+        // versão de testes), o administrador é criado com `php artisan nae:criar-admin`.
+        if (! app()->environment(['local', 'testing'])) {
             return;
         }
 

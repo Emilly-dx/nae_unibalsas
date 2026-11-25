@@ -110,7 +110,7 @@
                         <InputError message={errors.student_id} />
                     {/if}
                 </div>
-                <div class="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+                <div class="grid items-start gap-4 sm:grid-cols-[2fr_1fr_1fr]">
                     <div class="grid gap-2">
                         <Label for="date">Data <span class="text-primary">*</span></Label>
                         <Input id="date" name="date" type="date" max={todayValue()} value={attendance?.date_value ?? todayValue()} />
@@ -194,9 +194,11 @@
                             <dt class="text-muted-foreground">Atendimentos</dt><dd>{summary?.count ?? 0} no semestre</dd>
                             <dt class="text-muted-foreground">Último</dt><dd>{summary?.last ?? '—'}</dd>
                         </dl>
+                        {#key id}
                         <Link href={showStudent(id).url} class="mt-3 inline-block text-sm text-primary underline underline-offset-4">
                             Ver histórico completo
                         </Link>
+                        {/key}
                     {:else}
                         <p class="text-sm text-muted-foreground">Selecione um estudante para ver o resumo.</p>
                     {/if}

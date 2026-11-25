@@ -37,7 +37,18 @@ class StudentDocument extends Model implements SensitiveRecord
     /** @use HasFactory<StudentDocumentFactory> */
     use HasFactory, LogsActivity, SoftDeletes;
 
-    public const string DISK = 'local';
+    /**
+     * Disco privado onde ficam os laudos. No computador local é o "local"
+     * (storage/app/private). Na hospedagem, aponte NAE_DOCUMENTS_DISK para um
+     * bucket PRIVADO (o disco local de servidores como o Laravel Cloud é apagado
+     * a cada deploy).
+     */
+    public static function disk(): string
+    {
+        $disk = config('nae.documents_disk');
+
+        return is_string($disk) && $disk !== '' ? $disk : 'local';
+    }
 
     /**
      * @return array<string, string>

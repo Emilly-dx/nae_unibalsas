@@ -11,7 +11,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Activitylog\Models\Activity;
 
 beforeEach(function () {
-    Storage::fake(StudentDocument::DISK);
+    Storage::fake(StudentDocument::disk());
 });
 
 function professional(): User
@@ -141,7 +141,7 @@ describe('documentos (RF-017, RF-018, §15.8)', function () {
         expect($document->uploaded_by)->toBe($user->id)
             ->and($document->original_name)->toBe('laudo.pdf');
 
-        Storage::disk(StudentDocument::DISK)->assertExists($document->path);
+        Storage::disk(StudentDocument::disk())->assertExists($document->path);
     });
 
     test('rejeita tipos de arquivo não permitidos', function () {
@@ -201,4 +201,11 @@ describe('documentos (RF-017, RF-018, §15.8)', function () {
             ->get(route('students.show', $student))
             ->assertInertia(fn (Assert $page) => $page->has('documents', 1));
     });
+});
+
+test('os laudos vão para o disco configurado em NAE_DOCUMENTS_DISK', function () {
+    config(['nae.documents_disk' => 'documentos']);
+    Storage::fake('documentos');
+
+    expect(StudentDocument::disk())->toBe('documentos');
 });
