@@ -188,48 +188,48 @@ Requisitos do servidor: PHP 8.4 (extensões `pdo_mysql`, `mbstring`, `openssl`, 
 Passo a passo para colocar a versão de testes (dados fictícios) no [Laravel Cloud](https://cloud.laravel.com):
 
 1. **No computador, uma vez:** instale o pacote que liga o Laravel ao armazenamento de arquivos da nuvem e envie ao GitHub:
-   ```bash
-   composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
-   ```
-2. **Criar a aplicação:** entre em cloud.laravel.com com o GitHub, escolha o plano Starter, clique em *New application* e selecione o repositório e a branch `main`.
+    ```bash
+    composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
+    ```
+2. **Criar a aplicação:** entre em cloud.laravel.com com o GitHub, escolha o plano Starter, clique em _New application_ e selecione o repositório e a branch `main`.
 3. **Recursos** (no painel da aplicação):
-   - *Add database* → **Laravel MySQL** (tamanho Flex).
-   - *Add bucket* → **Laravel Object Storage**, visibilidade **Private**, nome do disco `documentos`. **Não** marque como disco padrão.
+    - _Add database_ → **Laravel MySQL** (tamanho Flex).
+    - _Add bucket_ → **Laravel Object Storage**, visibilidade **Private**, nome do disco `documentos`. **Não** marque como disco padrão.
 4. **Settings → General:** PHP **8.4**.
 5. **Settings → Environment variables:**
-   ```dotenv
-   APP_NAME="NAE UNIBALSAS"
-   VITE_APP_NAME="NAE UNIBALSAS"
-   APP_ENV=staging
-   APP_DEBUG=false
-   SESSION_DRIVER=database
-   SESSION_SECURE_COOKIE=true
-   CACHE_STORE=database
-   QUEUE_CONNECTION=sync
-   MAIL_MAILER=log
-   LOG_LEVEL=warning
-   NAE_DOCUMENTS_DISK=documentos
-   NAE_DEMO_PASSWORD=uma-senha-forte-so-para-o-teste
-   ```
+    ```dotenv
+    APP_NAME="NAE UNIBALSAS"
+    VITE_APP_NAME="NAE UNIBALSAS"
+    APP_ENV=staging
+    APP_DEBUG=false
+    SESSION_DRIVER=database
+    SESSION_SECURE_COOKIE=true
+    CACHE_STORE=database
+    QUEUE_CONNECTION=sync
+    MAIL_MAILER=log
+    LOG_LEVEL=warning
+    NAE_DOCUMENTS_DISK=documentos
+    NAE_DEMO_PASSWORD=uma-senha-forte-so-para-o-teste
+    ```
 6. **Settings → Deployments:**
-   - *Build commands* (sem `--no-dev`, porque os dados fictícios usam o Faker):
-     ```bash
-     composer install --optimize-autoloader
-     npm ci --audit false
-     npm run build
-     php artisan optimize
-     ```
-   - *Deploy commands*:
-     ```bash
-     php artisan migrate --force
-     php artisan db:seed --class=AccessControlSeeder --force
-     ```
+    - _Build commands_ (sem `--no-dev`, porque os dados fictícios usam o Faker):
+        ```bash
+        composer install --optimize-autoloader
+        npm ci --audit false
+        npm run build
+        php artisan optimize
+        ```
+    - _Deploy commands_:
+        ```bash
+        php artisan migrate --force
+        php artisan db:seed --class=AccessControlSeeder --force
+        ```
 7. Clique em **Deploy**. Quando terminar, na aba **Commands**:
-   ```bash
-   php artisan nae:criar-admin --name="Administrador" --email="seu-email@exemplo.com" --password="senha-forte"
-   php artisan db:seed --class=DemoDataSeeder --force
-   ```
-   As contas de demonstração (psicopedagoga@nae.test etc.) usam a senha de `NAE_DEMO_PASSWORD`.
+    ```bash
+    php artisan nae:criar-admin --name="Administrador" --email="seu-email@exemplo.com" --password="senha-forte"
+    php artisan db:seed --class=DemoDataSeeder --force
+    ```
+    As contas de demonstração (psicopedagoga@nae.test etc.) usam a senha de `NAE_DEMO_PASSWORD`.
 8. O sistema fica no endereço `*.laravel.cloud` mostrado no painel. A cada `git push` na `main`, o Cloud publica a nova versão.
 
 **Ao atualizar o sistema no servidor:**
