@@ -8,6 +8,8 @@ use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Http\Requests\Concerns\HasPortugueseMessages;
 use App\Models\Student;
+use App\Support\Courses;
+use App\Support\Registration;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -38,19 +40,23 @@ abstract class StudentRequest extends FormRequest
             'birth_date' => ['required', 'date', 'before:today'],
             'sex' => ['nullable', Rule::enum(Sex::class)],
             'registration' => [
-                'required', 'string', 'max:30',
+                'required', 'string', 'regex:'.Registration::PATTERN,
                 // Inclui inativos: matrícula de estudante inativo deve ser reativada, não duplicada.
                 Rule::unique(Student::class, 'registration')
                     ->ignore($student instanceof Student ? $student->id : null),
             ],
-            'course' => ['required', 'string', 'max:255'],
+            // Lista oficial (config/nae.php); na edição, aceita também o curso atual.
+            'course' => ['required', 'string', Rule::in([
+                ...Courses::names(),
+                ...($student instanceof Student ? [$student->course] : []),
+            ])],
             'period' => ['required', 'integer', 'between:1,12'],
             'shift' => ['nullable', Rule::enum(Shift::class)],
             'modality' => ['required', Rule::enum(Modality::class)],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'digits_between:10,11'],
             'guardian_name' => ['nullable', 'string', 'max:255'],
-            'guardian_phone' => ['nullable', 'string', 'max:20'],
+            'guardian_phone' => ['nullable', 'digits_between:10,11'],
             'guardian_relationship' => ['nullable', 'string', 'max:50'],
             'needs_accessibility' => ['boolean'],
             'accessibility_resources' => ['nullable', 'array'],
@@ -115,11 +121,21 @@ abstract class StudentRequest extends FormRequest
     {
         $this->merge([
             'registration' => is_string($this->input('registration'))
-                ? trim($this->input('registration'))
+                ? Registration::normalize($this->input('registration'))
                 : $this->input('registration'),
             'modality' => $this->input('modality') ?: 'presential',
             'needs_accessibility' => $this->boolean('needs_accessibility'),
             'has_external_follow_up' => $this->boolean('has_external_follow_up'),
+            'phone' => $this->onlyDigits($this->input('phone')),
+            'guardian_phone' => $this->onlyDigits($this->input('guardian_phone')),
         ]);
+    }
+
+    /**
+     * Mantém apenas os dígitos (ex.: "(99) 99999-0000" → "99999990000").
+     */
+    private function onlyDigits(mixed $value): mixed
+    {
+        return is_string($value) ? preg_replace('/\D+/', '', $value) : $value;
     }
 }

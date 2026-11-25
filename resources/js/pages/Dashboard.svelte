@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+    import { index as reportsIndex } from '@/routes/reports';
     import { Link, page } from '@inertiajs/svelte';
     import CalendarDays from '@lucide/svelte/icons/calendar-days';
     import ChartColumn from '@lucide/svelte/icons/chart-column';
@@ -20,19 +21,26 @@
     import ShieldCheck from '@lucide/svelte/icons/shield-check';
     import Users from '@lucide/svelte/icons/users';
     import AppHead from '@/components/AppHead.svelte';
-    import DemoNotice from '@/components/demo/DemoNotice.svelte';
-    import StatCard from '@/components/demo/StatCard.svelte';
+    import StatCard from '@/components/form/StatCard.svelte';
     import { Button } from '@/components/ui/button';
-    import {
-        attendanceChipStyles,
-        attendanceTypeLabels,
-        demoStudent,
-        todayAgenda,
-        triageQueue,
-    } from '@/lib/demo/data';
+    import { attendanceChipClass, attendanceLabel, attendanceStatusClass } from '@/lib/attendances';
     import { can } from '@/lib/permissions';
     import { cn } from '@/lib/utils';
+    import { show as showAttendance } from '@/routes/attendances';
+    import { create as registerAttendance, edit as registerScheduled } from '@/routes/attendances/register';
     import { create as createStudent } from '@/routes/students';
+    import { index as agendaIndex } from '@/routes/agenda';
+    import { create as createRequest } from '@/routes/triage/requests';
+    import { create as createReferral } from '@/routes/referrals';
+    import type { AttendanceSummary } from '@/types';
+
+    let {
+        stats,
+        todayAgenda,
+    }: {
+        stats: { today: number | null; queue: number | null; referrals: number | null; following: number | null };
+        todayAgenda: (AttendanceSummary & { canRegister: boolean })[];
+    } = $props();
 
     const roleLabels: Record<string, string> = {
         administrator: 'Administrador',
@@ -44,7 +52,6 @@
     };
 
     const auth = $derived(page.props.auth);
-    const demo = $derived(page.props.demoScreens);
     const firstName = $derived(auth.user.name.split(' ')[0]);
     const isAdmin = $derived(auth.roles.includes('administrator'));
     const profile = $derived(
@@ -69,9 +76,10 @@
                 icon: Plus,
                 show: can(auth, 'students.create'),
             },
-            { title: 'Nova solicitação', href: '/triagem/nova-solicitacao', icon: Inbox, show: demo },
-            { title: 'Novo encaminhamento', href: '/encaminhamentos', icon: Route, show: demo },
-            { title: 'Relatórios', href: '/relatorios', icon: ChartColumn, show: demo },
+            { title: 'Nova solicitação', href: createRequest().url, icon: Inbox, show: can(auth, 'triage.create') },
+            { title: 'Registrar atendimento', href: registerAttendance().url, icon: FileText, show: can(auth, 'attendances.create') },
+            { title: 'Novo encaminhamento', href: createReferral().url, icon: Route, show: can(auth, 'referrals.create') },
+            { title: 'Relatórios', href: reportsIndex().url, icon: ChartColumn, show: can(auth, 'reports.view') },
         ].filter((shortcut) => shortcut.show),
     );
 </script>
@@ -87,69 +95,79 @@
                 UNIBALSAS. Hoje é {today}.
             </p>
         </div>
-        {#if demo}
-            <div class="flex flex-wrap gap-2">
+        <div class="flex shrink-0 flex-wrap gap-2">
+            {#if can(auth, 'triage.create')}
                 <Button variant="outline" asChild>
                     {#snippet children(props)}
-                        <Link {...props} href="/triagem/nova-solicitacao">
-                            <Plus class="size-4" /> Nova solicitação
-                        </Link>
+                        <Link {...props} href={createRequest().url}><Plus class="size-4" /> Nova solicitação</Link>
                     {/snippet}
                 </Button>
+            {/if}
+            {#if can(auth, 'attendances.create')}
                 <Button asChild>
                     {#snippet children(props)}
-                        <Link {...props} href="/atendimentos/registrar">
-                            <FileText class="size-4" /> Registrar atendimento
-                        </Link>
+                        <Link {...props} href={registerAttendance().url}><FileText class="size-4" /> Registrar atendimento</Link>
                     {/snippet}
                 </Button>
-            </div>
+            {/if}
+        </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {#if stats.today !== null}
+            <StatCard title="Atendimentos hoje" value={stats.today} hint="Na agenda do dia" icon={CalendarDays} />
+        {/if}
+        {#if stats.queue !== null}
+            <StatCard title="Fila de triagem" value={stats.queue} hint="Solicitações aguardando análise" icon={Inbox} />
+        {/if}
+        {#if stats.referrals !== null}
+            <StatCard title="Encaminhamentos" value={stats.referrals} hint="Em aberto, aguardando retorno" icon={Route} />
+        {/if}
+        {#if stats.following !== null}
+            <StatCard title="Em acompanhamento" value={stats.following} hint="Estudantes atendidos no semestre" icon={Users} />
         {/if}
     </div>
 
-    {#if demo}
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard title="Atendimentos hoje" value={todayAgenda.length} hint="Na agenda do dia" icon={CalendarDays} />
-            <StatCard title="Fila de triagem" value={triageQueue.length} hint="Solicitações aguardando análise" icon={Inbox} />
-            <StatCard title="Encaminhamentos" value={2} hint="Aguardando retorno" icon={Route} />
-            <StatCard title="Em acompanhamento" value={38} hint="Estudantes no semestre" icon={Users} />
-        </div>
-    {/if}
-
     <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        {#if demo}
+        {#if stats.today !== null}
             <section class="overflow-hidden rounded-xl border bg-card">
                 <header class="flex items-center justify-between border-b px-5 py-4">
                     <h2 class="font-semibold">Agenda de hoje</h2>
-                    <Link href="/triagem?aba=agenda" class="text-sm text-primary underline-offset-4 hover:underline">
+                    <Link href={agendaIndex().url} class="text-sm text-primary underline-offset-4 hover:underline">
                         Ver agenda da semana
                     </Link>
                 </header>
-                <ul class="divide-y">
-                    {#each todayAgenda as item (item.time)}
-                        {@const student = demoStudent(item.student)}
-                        <li class="flex items-center gap-4 px-5 py-3">
-                            <span class="w-14 font-mono text-sm font-semibold">{item.time}</span>
-                            <div class="min-w-0 flex-1">
-                                <p class="truncate text-sm font-medium">{student.name}</p>
-                                <p class="truncate text-xs text-muted-foreground">
-                                    {student.course} · {student.period}º período
-                                </p>
-                            </div>
-                            <span class={cn('hidden rounded-full px-2.5 py-0.5 text-xs font-medium sm:inline', attendanceChipStyles[item.type])}>
-                                {attendanceTypeLabels[item.type]}
-                            </span>
-                            <Button variant="outline" size="sm" asChild>
-                                {#snippet children(props)}
-                                    <Link {...props} href={`/atendimentos/registrar?estudante=${encodeURIComponent(student.name)}`}>
-                                        Registrar
+                {#if todayAgenda.length === 0}
+                    <p class="px-5 py-8 text-center text-sm text-muted-foreground">Nenhum atendimento agendado para hoje.</p>
+                {:else}
+                    <ul class="divide-y">
+                        {#each todayAgenda as item (item.id)}
+                            <li class="flex items-center gap-4 px-5 py-3">
+                                <span class="w-14 font-mono text-sm font-semibold">{item.time}</span>
+                                <div class="min-w-0 flex-1">
+                                    <Link href={showAttendance(item.id).url} class="block truncate text-sm font-medium hover:underline">
+                                        {item.student.name}
                                     </Link>
-                                {/snippet}
-                            </Button>
-                        </li>
-                    {/each}
-                </ul>
-                <div class="border-t p-4"><DemoNotice milestone="M4" /></div>
+                                    <p class="truncate text-xs text-muted-foreground">
+                                        {item.student.course} · {item.student.period}º período · {item.professional}
+                                    </p>
+                                </div>
+                                <span class={cn('hidden rounded-full px-2.5 py-0.5 text-xs font-medium sm:inline', attendanceChipClass(item))}>
+                                    {attendanceLabel(item)}
+                                </span>
+                                {#if item.canRegister && item.status === 'scheduled'}
+                                    <Button variant="outline" size="sm" asChild>
+                                        {#snippet children(props)}
+                                            <Link {...props} href={registerScheduled(item.id).url}>Registrar</Link>
+                                        {/snippet}
+                                    </Button>
+                                {:else}
+                                    <span class={cn('rounded-full px-2 py-0.5 text-xs', attendanceStatusClass(item.status))}>{item.status_label}</span>
+                                {/if}
+                            </li>
+                        {/each}
+                    </ul>
+                {/if}
             </section>
         {/if}
 

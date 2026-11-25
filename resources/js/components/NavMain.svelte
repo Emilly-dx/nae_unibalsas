@@ -13,15 +13,17 @@
 
     let {
         items = [],
+        label = 'Plataforma',
     }: {
         items: NavItem[];
+        label?: string;
     } = $props();
 
     const url = currentUrlState();
 </script>
 
 <SidebarGroup class="px-2 py-0">
-    <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
+    <SidebarGroupLabel>{label}</SidebarGroupLabel>
     <SidebarMenu>
         {#each items as item (toUrl(item.href))}
             <SidebarMenuItem>

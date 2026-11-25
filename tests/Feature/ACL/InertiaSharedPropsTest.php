@@ -22,7 +22,7 @@ test('auth.permissions and auth.roles are shared with every inertia response', f
 });
 
 test('auth.permissions and auth.roles are empty for a guest', function () {
-    $this->get('/')
+    $this->get(route('login'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.permissions', [])
             ->where('auth.roles', [])

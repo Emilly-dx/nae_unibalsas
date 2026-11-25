@@ -2,14 +2,22 @@
 
 namespace App\Providers;
 
+use App\Models\Attendance;
 use App\Models\Contracts\SensitiveRecord;
+use App\Models\Referral;
 use App\Models\StudentDisability;
 use App\Models\StudentDocument;
 use App\Models\User;
+use App\Policies\AttendancePolicy;
+use App\Policies\ReferralPolicy;
 use App\Policies\SensitiveRecordPolicy;
+use App\Support\Audit\RecordAuthenticationActivity;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -21,7 +29,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // No Windows, o `php artisan serve` não repassa as variáveis TEMP/TMP ao
+        // servidor do PHP: sem pasta temporária, todo upload falha com
+        // "failed to upload". Repassando as duas, os uploads funcionam.
+        ServeCommand::$passthroughVariables = array_values(array_unique([
+            ...ServeCommand::$passthroughVariables,
+            'TEMP',
+            'TMP',
+        ]));
     }
 
     /**
@@ -31,6 +46,19 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureAuthorization();
+        $this->configureAuditTrail();
+    }
+
+    /**
+     * Registra na auditoria os acessos ao sistema (M9).
+     */
+    protected function configureAuditTrail(): void
+    {
+        Event::listen(Events\Login::class, [RecordAuthenticationActivity::class, 'handleLogin']);
+        Event::listen(Events\Logout::class, [RecordAuthenticationActivity::class, 'handleLogout']);
+        Event::listen(Events\Failed::class, [RecordAuthenticationActivity::class, 'handleFailed']);
+        Event::listen(Events\Lockout::class, [RecordAuthenticationActivity::class, 'handleLockout']);
+        Event::listen(Events\PasswordReset::class, [RecordAuthenticationActivity::class, 'handlePasswordReset']);
     }
 
     /**
@@ -66,6 +94,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(StudentDisability::class, SensitiveRecordPolicy::class);
         Gate::policy(StudentDocument::class, SensitiveRecordPolicy::class);
+        Gate::policy(Attendance::class, AttendancePolicy::class);
+        Gate::policy(Referral::class, ReferralPolicy::class);
 
         Gate::before(function (User $user, string $ability, array $arguments) {
             foreach ($arguments as $argument) {

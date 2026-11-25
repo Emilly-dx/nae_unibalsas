@@ -17,6 +17,8 @@ export type StudentListItem = {
     needs_accessibility: boolean;
     accessibility_resources: string[];
     active: boolean;
+    follow_up?: string;
+    follow_up_label?: string;
 };
 
 export type Student = Omit<StudentListItem, 'accessibility_resources'> & {

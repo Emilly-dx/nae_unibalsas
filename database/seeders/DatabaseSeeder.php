@@ -15,11 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            ModuleSeeder::class,
-            PermissionSeeder::class,
-            RoleSeeder::class,
-        ]);
+        $this->call(AccessControlSeeder::class);
 
         // User::factory(10)->create();
 

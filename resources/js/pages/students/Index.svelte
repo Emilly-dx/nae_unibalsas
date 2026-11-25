@@ -13,11 +13,9 @@
     import { Link, page, router } from '@inertiajs/svelte';
     import ChevronLeft from '@lucide/svelte/icons/chevron-left';
     import ChevronRight from '@lucide/svelte/icons/chevron-right';
-    import Download from '@lucide/svelte/icons/download';
     import Plus from '@lucide/svelte/icons/plus';
     import Search from '@lucide/svelte/icons/search';
     import Users from '@lucide/svelte/icons/users';
-    import { toast } from 'svelte-sonner';
     import AppHead from '@/components/AppHead.svelte';
     import Heading from '@/components/Heading.svelte';
     import { Badge } from '@/components/ui/badge';
@@ -27,7 +25,10 @@
     import { getInitials } from '@/lib/initials';
     import { can } from '@/lib/permissions';
     import { cn } from '@/lib/utils';
+    import { create as registerAttendance } from '@/routes/attendances/register';
     import { create, show } from '@/routes/students';
+    import { create as createRequest } from '@/routes/triage/requests';
+    import { create as createReferral } from '@/routes/referrals';
     import type { Paginated, StudentListItem } from '@/types';
 
     type Filters = {
@@ -55,7 +56,6 @@
     let status = $state<Filters['status']>(filters.status);
 
     const canCreate = $derived(can(page.props.auth, 'students.create'));
-    const demo = $derived(page.props.demoScreens);
 
     let selectedId = $state<number | null>(null);
     const selected = $derived(
@@ -118,10 +118,6 @@
         />
 
         <div class="flex flex-wrap gap-2">
-        <Button variant="outline" onclick={() => toast.info('A exportação será implementada no módulo de relatórios (M8).')}>
-            <Download class="size-4" />
-            Exportar
-        </Button>
         {#if canCreate}
             <Button asChild>
                 {#snippet children(props)}
@@ -244,6 +240,14 @@
                                     {:else}
                                         <Badge variant="outline">Inativo</Badge>
                                     {/if}
+                                    {#if student.follow_up === 'active' || student.follow_up === 'waiting'}
+                                        <span class={cn('rounded-full px-2 py-0.5 text-xs font-medium',
+                                            student.follow_up === 'active'
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300')}>
+                                            {student.follow_up_label}
+                                        </span>
+                                    {/if}
                                     {#if student.needs_accessibility}
                                         <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">Acessibilidade</span>
                                     {/if}
@@ -288,25 +292,28 @@
                         </div>
                     </div>
                 {/if}
-                <div class="border-t pt-4">
-                    <p class="mb-2 text-sm font-semibold">Histórico</p>
-                    <p class="text-sm text-muted-foreground">
-                        Solicitações, triagem e atendimentos aparecerão aqui com o módulo M4.
-                    </p>
-                </div>
                 <div class="mt-2 flex flex-col gap-2">
-                    {#if demo && selected.active}
+                    {#if selected.active && can(page.props.auth, 'attendances.create')}
                         <Button asChild>
                             {#snippet children(props)}
-                                <Link {...props} href="/atendimentos/registrar">Registrar atendimento</Link>
+                                <Link {...props} href={registerAttendance({ query: { estudante: selected.id } }).url}>Registrar atendimento</Link>
                             {/snippet}
                         </Button>
+                    {/if}
+                    {#if selected.active && can(page.props.auth, 'triage.create')}
                         <Button variant="outline" asChild>
-                            {#snippet children(props)}<Link {...props} href="/encaminhamentos">Novo encaminhamento</Link>{/snippet}
+                            {#snippet children(props)}
+                                <Link {...props} href={createRequest({ query: { estudante: selected.id } }).url}>Nova solicitação de apoio</Link>
+                            {/snippet}
+                        </Button>
+                    {/if}
+                    {#if selected.active && can(page.props.auth, 'referrals.create')}
+                        <Button variant="outline" asChild>
+                            {#snippet children(props)}<Link {...props} href={createReferral({ query: { estudante: selected.id } }).url}>Novo encaminhamento</Link>{/snippet}
                         </Button>
                     {/if}
                     <Button variant="ghost" asChild>
-                        {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro completo</Link>{/snippet}
+                        {#snippet children(props)}<Link {...props} href={show(selected.id).url}>Ver cadastro e histórico</Link>{/snippet}
                     </Button>
                 </div>
             </aside>

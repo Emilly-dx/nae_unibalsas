@@ -39,9 +39,15 @@ class PermissionSeeder extends Seeder
                 'students.delete' => 'Inativar/reativar estudantes',
                 'students.sensitive' => 'Registrar e consultar dados sensíveis de estudantes (CID e documentos)',
             ],
+            'triage' => [
+                'triage.view' => 'Visualizar solicitações de apoio',
+                'triage.create' => 'Registrar solicitações de apoio',
+                'triage.perform' => 'Realizar a triagem',
+            ],
             'attendances' => [
+                'attendances.schedule' => 'Agendar atendimentos',
                 'attendances.view' => 'Visualizar atendimentos',
-                'attendances.create' => 'Criar atendimentos',
+                'attendances.create' => 'Registrar atendimentos',
                 'attendances.edit' => 'Editar atendimentos',
                 'attendances.delete' => 'Excluir atendimentos',
                 'attendances.finish' => 'Concluir atendimentos',
@@ -55,6 +61,10 @@ class PermissionSeeder extends Seeder
             'reports' => [
                 'reports.view' => 'Visualizar relatórios',
                 'reports.export_pdf' => 'Exportar relatórios em PDF',
+                'reports.export_spreadsheet' => 'Exportar relatórios em planilha (Excel)',
+            ],
+            'audit' => [
+                'audit.view' => 'Consultar a trilha de auditoria',
             ],
         ];
 

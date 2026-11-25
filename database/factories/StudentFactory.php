@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\Modality;
 use App\Enums\Sex;
 use App\Enums\Shift;
 use App\Models\Student;
+use App\Support\Courses;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,17 +20,11 @@ class StudentFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'registration' => (string) fake()->unique()->numerify('2026######'),
-            'course' => fake()->randomElement([
-                'Análise e Desenvolvimento de Sistemas',
-                'Direito',
-                'Enfermagem',
-                'Agronomia',
-                'Psicologia',
-            ]),
+            'registration' => fake()->unique()->numerify('2#.'.fake()->numberBetween(1, 2).'.#####'),
+            'course' => $course = fake()->randomElement(Courses::names()),
             'period' => fake()->numberBetween(1, 10),
             'shift' => fake()->randomElement(Shift::cases()),
-            'modality' => fake()->randomElement(Modality::cases()),
+            'modality' => Courses::all()[$course],
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('(99) 9####-####'),
             'birth_date' => fake()->dateTimeBetween('-40 years', '-17 years')->format('Y-m-d'),

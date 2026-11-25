@@ -27,12 +27,14 @@
         shiftOptions,
         accessibilityOptions,
         courses,
+        modalities,
     }: {
         student: Student;
         sexOptions: SexOption[];
         shiftOptions: Option[];
         accessibilityOptions: Option[];
-        courses: string[];
+        courses: (Option & { modality: string })[];
+        modalities: Option[];
     } = $props();
 </script>
 
@@ -47,6 +49,7 @@
         {shiftOptions}
         {accessibilityOptions}
         {courses}
+        {modalities}
         submitLabel="Salvar alterações"
     >
         {#snippet header(actions)}

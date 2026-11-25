@@ -47,19 +47,77 @@
     import { can } from '@/lib/permissions';
     import { edit } from '@/routes/students';
     import { download } from '@/routes/students/documents';
-    import type { StudentDisability, StudentDocument } from '@/types';
+    import { attendanceChipClass, attendanceLabel, attendanceStatusClass } from '@/lib/attendances';
+    import { cn } from '@/lib/utils';
+    import { create as scheduleAttendance, show as showAttendance } from '@/routes/attendances';
+    import { create as registerAttendance } from '@/routes/attendances/register';
+    import { create as createRequest, show as showRequest } from '@/routes/triage/requests';
+    import FieldSelect from '@/components/form/FieldSelect.svelte';
+    import { referralStatusClass } from '@/lib/attendances';
+    import { create as createReferral, show as showReferral } from '@/routes/referrals';
+    import { close as closeFollowUp } from '@/routes/students/follow-up';
+    import type { AttendanceSummary, Option, ReferralSummary, StudentDisability, StudentDocument } from '@/types';
+    import { formatPhone } from '@/lib/masks';
 
     let {
         student,
         disabilities,
         documents,
         canManageSensitive,
+        history,
+        followUp,
+        can: allowed,
     }: {
         student: Student;
         disabilities: StudentDisability[];
         documents: StudentDocument[];
         canManageSensitive: boolean;
+        history: {
+            attendances: (AttendanceSummary & { excerpt: string | null })[] | null;
+            requests: { id: number; date: string | null; date_iso: string | null; origin: string; status_label: string }[] | null;
+            referrals: ReferralSummary[] | null;
+        };
+        followUp: {
+            status: string;
+            status_label: string;
+            started_at: string | null;
+            last_at: string | null;
+            attendances: number;
+            professionals: string[];
+            open_referrals: number;
+            closed_at: string | null;
+            closure_reason: string | null;
+            closed_by: string | null;
+            canClose: boolean;
+            closureReasons: Option[];
+        } | null;
+        can: { createRequest: boolean; schedule: boolean; register: boolean; refer: boolean };
     } = $props();
+
+    type TimelineItem =
+        | { kind: 'request'; sort: string; data: NonNullable<typeof history.requests>[number] }
+        | { kind: 'attendance'; sort: string; data: NonNullable<typeof history.attendances>[number] }
+        | { kind: 'referral'; sort: string; data: ReferralSummary };
+
+    // Linha do tempo (RF-031): solicitações, atendimentos e encaminhamentos, do mais recente ao mais antigo.
+    const timeline = $derived.by((): TimelineItem[] => {
+        const items: TimelineItem[] = [
+            ...(history.requests ?? []).map((data) => ({ kind: 'request' as const, sort: data.date_iso ?? '', data })),
+            ...(history.attendances ?? []).map((data) => ({ kind: 'attendance' as const, sort: data.scheduled_at, data })),
+            ...(history.referrals ?? []).map((data) => ({ kind: 'referral' as const, sort: data.referred_on_iso, data })),
+        ];
+
+        return items.sort((a, b) => b.sort.localeCompare(a.sort));
+    });
+
+    let closeOpen = $state(false);
+
+    const followUpClass: Record<string, string> = {
+        none: 'bg-muted text-muted-foreground',
+        waiting: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+        active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+        closed: 'bg-muted text-muted-foreground',
+    };
 
     const auth = $derived(page.props.auth);
     const canEdit = $derived(can(auth, 'students.edit') && student.active);
@@ -215,7 +273,7 @@
                         )}
                         {@render field('Sexo', student.sex_label)}
                         {@render field('E-mail', student.email)}
-                        {@render field('Telefone', student.phone)}
+                        {@render field('Telefone', formatPhone(student.phone))}
                     </dl>
                 </CardContent>
             </Card>
@@ -228,7 +286,7 @@
                     {#if student.guardian_name}
                         <dl class="grid gap-4 sm:grid-cols-3">
                             {@render field('Nome', student.guardian_name)}
-                            {@render field('Telefone', student.guardian_phone)}
+                            {@render field('Telefone', formatPhone(student.guardian_phone))}
                             {@render field('Parentesco', student.guardian_relationship)}
                         </dl>
                     {:else}
@@ -263,21 +321,140 @@
                 </CardContent>
             </Card>
 
+            {#if followUp}
+                <Card>
+                    <CardHeader>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <CardTitle>Acompanhamento</CardTitle>
+                            <span class={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', followUpClass[followUp.status])}>
+                                {followUp.status_label}
+                            </span>
+                        </div>
+                        <CardDescription>
+                            O acompanhamento é o conjunto dos atendimentos do estudante. Um novo atendimento reabre um acompanhamento encerrado.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                        <dl class="grid gap-4 sm:grid-cols-4">
+                            {@render field('Início', followUp.started_at)}
+                            {@render field('Último atendimento', followUp.last_at)}
+                            {@render field('Atendimentos', String(followUp.attendances))}
+                            {@render field('Encaminhamentos em aberto', String(followUp.open_referrals))}
+                        </dl>
+                        {#if followUp.professionals.length > 0}
+                            <p class="text-sm"><span class="text-muted-foreground">Profissionais:</span> {followUp.professionals.join(', ')}</p>
+                        {/if}
+                        {#if followUp.status === 'closed'}
+                            <p class="rounded-lg bg-muted/60 p-3 text-sm">
+                                Encerrado em {followUp.closed_at}{followUp.closed_by ? ` por ${followUp.closed_by}` : ''} — {followUp.closure_reason}.
+                            </p>
+                        {/if}
+                        {#if followUp.canClose}
+                            {#if closeOpen}
+                                <Form {...closeFollowUp.form(student.id)} class="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-end" onSuccess={() => (closeOpen = false)}>
+                                    {#snippet children({ errors, processing })}
+                                        <div class="grid flex-1 gap-2">
+                                            <Label for="closure_reason">Motivo do encerramento</Label>
+                                            <FieldSelect id="closure_reason" name="reason">
+                                                <option value="">Selecione</option>
+                                                {#each followUp.closureReasons as option (option.value)}<option value={option.value}>{option.label}</option>{/each}
+                                            </FieldSelect>
+                                            <InputError message={errors.reason} />
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <Button type="button" variant="ghost" onclick={() => (closeOpen = false)}>Voltar</Button>
+                                            <Button type="submit" variant="destructive" disabled={processing}>Encerrar</Button>
+                                        </div>
+                                    {/snippet}
+                                </Form>
+                            {:else}
+                                <Button variant="outline" size="sm" onclick={() => (closeOpen = true)}>Encerrar acompanhamento</Button>
+                            {/if}
+                        {/if}
+                    </CardContent>
+                </Card>
+            {/if}
+
             <Card>
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <History class="size-4" />
-                        Histórico de atendimentos
+                        Linha do tempo
                     </CardTitle>
                     <CardDescription>
-                        Atendimentos, encaminhamentos e acompanhamento do estudante.
+                        Solicitações, atendimentos e encaminhamentos. O conteúdo é sigiloso; você vê o resumo só dos atendimentos que registrou.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <p class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                        O histórico será exibido aqui quando o módulo de
-                        atendimentos (M4/M5) estiver disponível.
-                    </p>
+                <CardContent class="space-y-4">
+                    {#if allowed.createRequest || allowed.schedule || allowed.register || allowed.refer}
+                        <div class="flex flex-wrap gap-2">
+                            {#if allowed.createRequest}
+                                <Button variant="outline" size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={createRequest({ query: { estudante: student.id } }).url}>Nova solicitação</Link>{/snippet}
+                                </Button>
+                            {/if}
+                            {#if allowed.schedule}
+                                <Button variant="outline" size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={scheduleAttendance({ query: { estudante: student.id } }).url}>Agendar</Link>{/snippet}
+                                </Button>
+                            {/if}
+                            {#if allowed.refer}
+                                <Button variant="outline" size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={createReferral({ query: { estudante: student.id } }).url}>Encaminhar</Link>{/snippet}
+                                </Button>
+                            {/if}
+                            {#if allowed.register}
+                                <Button size="sm" asChild>
+                                    {#snippet children(props)}<Link {...props} href={registerAttendance({ query: { estudante: student.id } }).url}>Registrar atendimento</Link>{/snippet}
+                                </Button>
+                            {/if}
+                        </div>
+                    {/if}
+
+                    {#if history.attendances === null && history.requests === null && history.referrals === null}
+                        <p class="text-sm text-muted-foreground">Você não tem acesso ao histórico do estudante.</p>
+                    {:else if timeline.length === 0}
+                        <p class="rounded-md border border-dashed p-4 text-sm text-muted-foreground">Nada registrado ainda.</p>
+                    {:else}
+                        <ol class="relative space-y-4 border-l pl-5">
+                            {#each timeline as entry (entry.kind + entry.data.id)}
+                                <li class="relative">
+                                    {#if entry.kind === 'attendance'}
+                                        {@const attendance = entry.data}
+                                        <span class="absolute top-1.5 -left-[25px] size-2.5 rounded-full bg-primary"></span>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <Link href={showAttendance(attendance.id).url} class="text-sm font-medium hover:underline">
+                                                {attendance.date} às {attendance.time}
+                                            </Link>
+                                            <span class={cn('rounded-full px-2 py-0.5 text-xs', attendanceChipClass(attendance))}>{attendanceLabel(attendance)}</span>
+                                            <span class={cn('rounded-full px-2 py-0.5 text-xs', attendanceStatusClass(attendance.status))}>{attendance.status_label}</span>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground">{attendance.professional} · {attendance.modality_label}</p>
+                                        {#if attendance.excerpt}
+                                            <p class="mt-1 rounded-md bg-muted/60 px-2 py-1 text-xs">{attendance.excerpt}</p>
+                                        {/if}
+                                    {:else if entry.kind === 'referral'}
+                                        {@const referral = entry.data}
+                                        <span class="absolute top-1.5 -left-[25px] size-2.5 rounded-full bg-blue-600"></span>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <Link href={showReferral(referral.id).url} class="text-sm font-medium hover:underline">
+                                                {referral.referred_on} · Encaminhamento {referral.kind_label.toLowerCase()}
+                                            </Link>
+                                            <span class={cn('rounded-full px-2 py-0.5 text-xs', referralStatusClass(referral.status))}>{referral.status_label}</span>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground">{referral.origin} → {referral.destination}</p>
+                                    {:else}
+                                        {@const request = entry.data}
+                                        <span class="absolute top-1.5 -left-[25px] size-2.5 rounded-full bg-amber-500"></span>
+                                        <Link href={showRequest(request.id).url} class="text-sm font-medium hover:underline">
+                                            {request.date} · Solicitação de apoio
+                                        </Link>
+                                        <p class="text-xs text-muted-foreground">{request.origin} · {request.status_label}</p>
+                                    {/if}
+                                </li>
+                            {/each}
+                        </ol>
+                    {/if}
                 </CardContent>
             </Card>
         </div>
