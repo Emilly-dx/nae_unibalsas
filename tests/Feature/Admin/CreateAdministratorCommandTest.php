@@ -18,3 +18,10 @@ test('nae:criar-admin recusa e-mail repetido', function () {
         ->expectsQuestion('Senha (mínimo 8 caracteres)', 'uma-senha-forte')
         ->assertFailed();
 });
+
+test('nae:criar-admin aceita a senha por opção, para painéis sem perguntas', function () {
+    $this->artisan('nae:criar-admin', ['--name' => 'Admin NAE', '--email' => 'admin2@nae.test', '--password' => 'uma-senha-forte'])
+        ->assertSuccessful();
+
+    expect(User::query()->where('email', 'admin2@nae.test')->sole()->hasRole('administrator'))->toBeTrue();
+});

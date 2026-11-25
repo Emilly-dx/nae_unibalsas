@@ -17,7 +17,7 @@ use function Laravel\Prompts\text;
  */
 class CreateAdministrator extends Command
 {
-    protected $signature = 'nae:criar-admin {--name=} {--email=}';
+    protected $signature = 'nae:criar-admin {--name=} {--email=} {--password= : Para painéis que não aceitam perguntas (ex.: Commands do Laravel Cloud)}';
 
     protected $description = 'Cria uma conta de Administrador da plataforma do NAE';
 
@@ -27,7 +27,7 @@ class CreateAdministrator extends Command
 
         $name = $this->option('name') ?: text('Nome completo', required: true);
         $email = $this->option('email') ?: text('E-mail', required: true);
-        $secret = password('Senha (mínimo 8 caracteres)', required: true);
+        $secret = $this->option('password') ?: password('Senha (mínimo 8 caracteres)', required: true);
 
         $validator = Validator::make(
             ['name' => $name, 'email' => $email, 'password' => $secret],
