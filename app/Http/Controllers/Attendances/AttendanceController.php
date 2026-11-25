@@ -247,7 +247,10 @@ class AttendanceController extends Controller
         $attendance->conduct = $data['conduct'] ?? null;
         $attendance->agreements = $data['agreements'] ?? null;
         $attendance->next_return_on = isset($data['next_return_on']) ? CarbonImmutable::parse((string) $data['next_return_on']) : null;
-        $attendance->status = AttendanceStatus::Attended;
+        // Novo ou agendado vira "Atendido"; quem já foi encaminhado continua encaminhado.
+        if ($attendance->status !== AttendanceStatus::Referred) {
+            $attendance->status = AttendanceStatus::Attended;
+        }
         $attendance->registered_at ??= now()->toImmutable();
 
         // Registros antigos sem horário ficaram com 00:00: o início informado passa a valer.

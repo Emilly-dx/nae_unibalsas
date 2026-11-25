@@ -260,3 +260,21 @@ test('registro antigo sem horário (00:00) passa a usar o início informado na e
 
     expect($attendance->fresh()?->scheduled_at->format('H:i'))->toBe('10:15');
 });
+
+test('atendimento já encaminhado ainda pode ter o registro corrigido, sem perder a situação', function () {
+    $professional = userWithPermissions('attendances.view', 'attendances.create');
+    $attendance = Attendance::factory()->registered()->create([
+        'professional_id' => $professional->id,
+        'status' => AttendanceStatus::Referred,
+    ]);
+
+    $this->actingAs($professional)->get(route('attendances.register.edit', $attendance))->assertOk();
+
+    $this->actingAs($professional)
+        ->put(route('attendances.register.update', $attendance), registerData(['demand' => 'Demanda corrigida']))
+        ->assertSessionHasNoErrors();
+
+    $attendance->refresh();
+    expect($attendance->status)->toBe(AttendanceStatus::Referred)
+        ->and($attendance->demand)->toBe('Demanda corrigida');
+});
