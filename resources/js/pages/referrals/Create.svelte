@@ -114,7 +114,7 @@
                 <InputError message={errors.reason} />
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid items-start gap-4 sm:grid-cols-2">
                 <div class="grid gap-2">
                     <Label for="referred_on">Data do encaminhamento <span class="text-primary">*</span></Label>
                     <Input id="referred_on" name="referred_on" type="date" max={todayValue()} value={todayValue()} />

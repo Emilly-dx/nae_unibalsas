@@ -77,7 +77,7 @@
                 {/if}
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid items-start gap-4 sm:grid-cols-2">
                 <div class="grid gap-2">
                     <Label for="requester_name">Solicitante <span class="text-primary">*</span></Label>
                     <Input id="requester_name" name="requester_name" placeholder="Nome do(a) coordenador(a) ou docente" maxlength={255} />

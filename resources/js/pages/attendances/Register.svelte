@@ -110,7 +110,7 @@
                         <InputError message={errors.student_id} />
                     {/if}
                 </div>
-                <div class="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
+                <div class="grid items-start gap-4 sm:grid-cols-[2fr_1fr_1fr]">
                     <div class="grid gap-2">
                         <Label for="date">Data <span class="text-primary">*</span></Label>
                         <Input id="date" name="date" type="date" max={todayValue()} value={attendance?.date_value ?? todayValue()} />
