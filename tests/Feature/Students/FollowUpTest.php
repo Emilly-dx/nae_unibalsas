@@ -56,6 +56,7 @@ describe('encerramento (SRS §11.2)', function () {
         $this->actingAs($professional)->post(route('attendances.register.store'), [
             'student_id' => $student->id,
             'date' => now()->toDateString(),
+            'start_time' => '00:30',
             'type' => 'listening',
             'modality' => 'presential',
             'demand' => 'Retorno do estudante.',

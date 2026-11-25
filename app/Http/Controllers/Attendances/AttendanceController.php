@@ -133,7 +133,7 @@ class AttendanceController extends Controller
         $data = $request->validated();
 
         $attendance = new Attendance([
-            'scheduled_at' => CarbonImmutable::parse($data['date'].' '.($data['start_time'] ?? '00:00')),
+            'scheduled_at' => CarbonImmutable::parse($data['date'].' '.$data['start_time']),
             'planned_minutes' => 50,
         ]);
         $attendance->student()->associate(Student::query()->findOrFail((int) $data['student_id']));
@@ -250,7 +250,10 @@ class AttendanceController extends Controller
         $attendance->status = AttendanceStatus::Attended;
         $attendance->registered_at ??= now()->toImmutable();
 
-        if ($start !== null && $attendance->scheduled_at->toDateString() !== $date) {
+        // Registros antigos sem horário ficaram com 00:00: o início informado passa a valer.
+        $withoutTime = $attendance->scheduled_at->format('H:i') === '00:00';
+
+        if ($start !== null && ($attendance->scheduled_at->toDateString() !== $date || $withoutTime)) {
             $attendance->scheduled_at = $start;
         }
 

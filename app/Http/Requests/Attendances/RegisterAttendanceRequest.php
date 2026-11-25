@@ -38,8 +38,9 @@ class RegisterAttendanceRequest extends FormRequest
                 ? ['required', 'integer', Rule::exists(Student::class, 'id')->whereNull('deleted_at')]
                 : ['prohibited'],
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
-            'start_time' => ['nullable', 'date_format:H:i'],
-            'end_time' => ['nullable', 'date_format:H:i', 'required_with:start_time', 'after:start_time'],
+            // Sem agendamento prévio, o início é o horário do atendimento na agenda.
+            'start_time' => [$isNew ? 'required' : 'nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
             'type' => ['required', Rule::enum(AttendanceType::class)],
             'modality' => ['required', Rule::enum(AttendanceModality::class)],
             'demand' => ['required', 'string', 'max:10000'],
@@ -77,7 +78,7 @@ class RegisterAttendanceRequest extends FormRequest
             ...$this->portugueseMessages(),
             'date.before_or_equal' => 'O atendimento só pode ser registrado depois de acontecer.',
             'end_time.after' => 'O término deve ser depois do início.',
-            'end_time.required_with' => 'Informe o término do atendimento.',
+            'start_time.required' => 'Informe o horário de início do atendimento.',
             'next_return_on.after' => 'O próximo retorno deve ser depois da data do atendimento.',
             'date_format' => 'Informe um valor válido para :attribute.',
         ];

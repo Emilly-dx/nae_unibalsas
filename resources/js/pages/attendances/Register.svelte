@@ -117,7 +117,7 @@
                         <InputError message={errors.date} />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="start_time">Início</Label>
+                        <Label for="start_time">Início {#if !attendance}<span class="text-primary">*</span>{/if}</Label>
                         <Input id="start_time" name="start_time" type="time" value={attendance?.start_time ?? ''} />
                         <InputError message={errors.start_time} />
                     </div>

@@ -132,6 +132,7 @@ describe('criação (RF-034 a RF-038)', function () {
         $response = $this->actingAs($user)->post(route('attendances.register.store'), [
             'student_id' => $student->id,
             'date' => now()->toDateString(),
+            'start_time' => '08:00',
             'type' => 'psychopedagogical',
             'modality' => 'presential',
             'demand' => 'Demanda',
